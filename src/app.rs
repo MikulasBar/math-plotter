@@ -1,5 +1,8 @@
+use math_lib::{self, Parser, FnTree, Function};
 use iced::{
-    self, widget::{column, container, text, text_input}, Application, Command, Element
+    self,
+    widget::{column, container, text, text_input, button},
+    Application, Command, Element, Alignment, Length
 };
 
 pub fn run_app() -> iced::Result {
@@ -8,11 +11,13 @@ pub fn run_app() -> iced::Result {
 
 struct App {
     input: String,
+    value: f64,
 }
 
 #[derive(Debug, Clone)]
 enum Message {
-    UpdateValue(String),
+    SaveInput(String),
+    Calculate,
 }
 
 impl Application for App {
@@ -23,7 +28,8 @@ impl Application for App {
 
     fn new(_: ()) -> (App, Command<Self::Message>) {
         let app = App {
-            value: "".to_string(),
+            input: "x".to_string(),
+            value: 0.0,
         };
         (app, Command::none())
     }
@@ -38,37 +44,55 @@ impl Application for App {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
-            Message::UpdateValue(input) => {
+            Message::SaveInput(input) => {
                 self.input = input;
-            }
+            },
+            Message::Calculate => {
+                self.value = calculate(&self.input);
+            },
         }
         Command::none()
     }
 
     fn view(&self) -> Element<Self::Message> {
-        let value = calculate
-        
-        
-        
         let content = column!(
-            text_input("Placeholder", &self.value)
-            .on_input(move |input| {Message::UpdateValue(input)})
-            text(self.input.as_str()),
-        );
+            text_input("Placeholder", &self.input)
+                .on_input(move |input| Message::SaveInput(input)),
+
+            button("Calculate")
+                .on_press(Message::Calculate),
+
+            text(&self.value),
+        )
+        .align_items(Alignment::Center);
 
         container(content)
-            .width(iced::Length::Fill)
-            .height(iced::Length::Fill)
-            .center_x()
+            .width(Length::Fixed(400.0))
+            .height(Length::Fill)
             .center_y()
+            .center_x()
             .into()
     }
 }
 
-use math_lib::{self, Parser, FnTree, Function};
+use maplit::hashmap;
 
 pub fn calculate(input: &str) -> f64 {
-    let parser = Parser::new();
-    let tree = parser.parse(input).unwrap();
+    let mut parser = Parser::new();
+    let wrapped_func = parser.parse(input);
 
+    if let Ok(func) = wrapped_func {
+        let func = FnTree::new(func);
+
+        let args = hashmap!{
+            "x" => 0.0,
+        };
+
+        let result = func.evaluate(&args);
+
+        if let Ok(value) = result {
+            return value
+        }
+    }
+    f64::NAN
 }
