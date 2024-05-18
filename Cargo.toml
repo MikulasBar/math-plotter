@@ -1,5 +1,5 @@
 [package]
-name = "plotter"
+name = "math-plotter"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 maplit = "1.0.2"
-iced = "0.12.1"
-math-lib = { path = "../math-lib" }
+rand = "0.8.5"
+iced = {version = "0.12.1", features = ["canvas", "debug"]}
+math-lib = { git = "https://github.com/MikulasBar/rust-math-library.git"}

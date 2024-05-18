@@ -1,23 +1,25 @@
-use math_lib::{self, Parser, FnTree, Function};
+
+#[rustfmt::skip]
 use iced::{
     self,
-    widget::{column, container, text, text_input, button},
-    Application, Command, Element, Alignment, Length
+    widget::{canvas, column, container, text, text_input},
+    Alignment, Application, Command, Element, Length
 };
+
+use math_lib::{self, Parser, FnTree, Function};
+use crate::plotter::*;
 
 pub fn run_app() -> iced::Result {
     App::run(iced::Settings::default())
 }
 
 struct App {
-    input: String,
-    value: f64,
+    plotter: Plotter2D,
 }
 
 #[derive(Debug, Clone)]
 enum Message {
-    SaveInput(String),
-    Calculate,
+
 }
 
 impl Application for App {
@@ -28,8 +30,7 @@ impl Application for App {
 
     fn new(_: ()) -> (App, Command<Self::Message>) {
         let app = App {
-            input: "x".to_string(),
-            value: 0.0,
+            plotter: Plotter2D::new(),
         };
         (app, Command::none())
     }
@@ -43,31 +44,18 @@ impl Application for App {
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
-        match message {
-            Message::SaveInput(input) => {
-                self.input = input;
-            },
-            Message::Calculate => {
-                self.value = calculate(&self.input);
-            },
-        }
         Command::none()
     }
 
     fn view(&self) -> Element<Self::Message> {
-        let content = column!(
-            text_input("Placeholder", &self.input)
-                .on_input(move |input| Message::SaveInput(input)),
-
-            button("Calculate")
-                .on_press(Message::Calculate),
-
-            text(&self.value),
-        )
-        .align_items(Alignment::Center);
+        let content = iced::widget::column!(
+            canvas(&*&self.plotter)
+                .width(Length::Fixed(700.0))
+                .height(Length::Fixed(700.0)),
+        );
 
         container(content)
-            .width(Length::Fixed(400.0))
+            .width(Length::Fill)
             .height(Length::Fill)
             .center_y()
             .center_x()
