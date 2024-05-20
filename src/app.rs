@@ -49,7 +49,7 @@ impl Application for App {
 
     fn view(&self) -> Element<Self::Message> {
         let content = iced::widget::column!(
-            canvas(&*&self.plotter)
+            canvas(&self.plotter)
                 .width(Length::Fixed(700.0))
                 .height(Length::Fixed(700.0)),
         );
