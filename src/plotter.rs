@@ -6,7 +6,11 @@ use iced::{
     Color, Length, Point, Rectangle, Renderer, Theme
 };
 
-use crate::utilities;
+#[rustfmt::skip]
+use crate::{
+    utilities::{self, map_with_origin},
+    graph::Graph2D
+};
 
 pub struct Plotter2D {
     graphs: Vec<Graph2D>,
@@ -32,11 +36,9 @@ impl Plotter2D {
         
         Self {
             graphs: vec![polygon],
-            view: View::default(),
-            cache: Cache::default(),
-
             width,
-            height
+            height,
+            ..Self::default()
         }
     }
 
@@ -86,56 +88,21 @@ impl<Message> canvas::Program<Message> for Plotter2D {
             
             // draw graphs
             let origin = Point::new(bounds.width / 2.0, bounds.height / 2.0);
-            self.graphs.iter().for_each(|graph| {
-                graph.draw(frame, origin);
-            });
+            // self.graphs.iter().for_each(|graph| {
+            //     graph.draw(frame, origin);
+            // });
+
+            let g = Graph2D::Point(Point{x: 0.0, y: 0.0}, Color::WHITE);
+            let h = Graph2D::Point(Point{x: 0.0, y: 100.0}, Color::WHITE);
+            let j = Graph2D::Point(Point{x: 100.0, y: 0.0}, Color::WHITE);
+            g.draw(frame, origin);
+            h.draw(frame, origin);
+            j.draw(frame, origin);
         });
         vec![geometry]
     }
 }
 
-pub enum Graph2D {
-    Point(Point, Color),
-    Polygon(Vec<Point>, Color),
-}
-
-impl Graph2D {
-    pub fn draw(&self, frame: &mut Frame, origin: Point) {
-        let Point{x: ox, y: oy} = origin;
-        
-        match self {
-            Self::Point(Point{x, y}, color) => {
-                let point = Point::new(*x + ox, *y + oy);
-                let circle = Path::circle(point, 5.0);
-
-                frame.fill(&circle, *color)
-            },
-            Self::Polygon(points, color) => {
-                if points.len() < 2 {
-                    return;
-                }
-
-                let path = Path::new(|builder| {
-                    builder.move_to(points[0]);
-
-                    for p in points.iter().skip(1) {
-                        let point = Point::new(p.x + ox, p.y + oy);
-                        builder.line_to(point);
-                    }
-                    builder.close();
-                });
-                
-                frame.fill(&path, *color);
-            }
-        }
-    }
-} 
-
-impl Default for Graph2D {
-    fn default() -> Self {
-        Self::Point(Point::default(), Color::WHITE)
-    }
-}
 
 struct View {
     offset: (f32, f32),

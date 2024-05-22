@@ -28,9 +28,12 @@ impl Application for App {
     type Flags = ();
     type Theme = iced::Theme;
 
-    fn new(_: ()) -> (App, Command<Self::Message>) {
+    fn new(_flags: ()) -> (App, Command<Self::Message>) {
         let app = App {
-            plotter: Plotter2D::default(),
+            plotter: Plotter2D::new(
+                Length::Fixed(700.0),
+                Length::Fixed(700.0)
+            ),
         };
         (app, Command::none())
     }
