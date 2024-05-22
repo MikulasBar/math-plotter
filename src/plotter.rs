@@ -1,6 +1,9 @@
 use std::vec;
+#[rustfmt::skip]
 use iced::{
-    mouse, widget::canvas::{self, path::lyon_path::polygon, Cache, Frame, Geometry, Path}, Color, Point, Rectangle, Renderer, Theme
+    mouse,
+    widget::{canvas::{Cache, Frame, Geometry, Path}, Canvas, canvas},
+    Color, Length, Point, Rectangle, Renderer, Theme
 };
 
 use crate::utilities;
@@ -8,12 +11,15 @@ use crate::utilities;
 pub struct Plotter2D {
     graphs: Vec<Graph2D>,
     view: View,
-    cache: Cache
+    cache: Cache,
+
+    width: Length,
+    height: Length
 }
 
 // point factor = 350.0
 impl Plotter2D {
-    pub fn new() -> Self {
+    pub fn new(width: Length, height: Length) -> Self {
         let mut points: Vec<Point> = Vec::new();
 
         for _ in 0..3 {
@@ -27,16 +33,17 @@ impl Plotter2D {
         Self {
             graphs: vec![polygon],
             view: View::default(),
-            cache: Cache::default()
+            cache: Cache::default(),
+
+            width,
+            height
         }
     }
 
-    pub fn from_graphs(graphs: Vec<Graph2D>) -> Self {
-        Self {
-            graphs,
-            view: View::default(),
-            cache: Cache::default()
-        }
+    pub fn display<M>(&self) -> Canvas<&Self, M> {
+        canvas(self)
+            .width(self.width)
+            .height(self.height)
     }
 
     // pub fn push(&mut self, graph: Graph2D) {
@@ -46,6 +53,19 @@ impl Plotter2D {
     // pub fn pop(&mut self) -> Option<Graph2D> {
     //     self.graphs.pop()
     // }
+}
+
+impl Default for Plotter2D {
+    fn default() -> Self {
+        Self {
+            graphs: vec![],
+            view: View::default(),
+            cache: Cache::default(),
+
+            width: Length::Fixed(700.0),
+            height: Length::Fixed(700.0)
+        }
+    }
 }
 
 impl<Message> canvas::Program<Message> for Plotter2D {

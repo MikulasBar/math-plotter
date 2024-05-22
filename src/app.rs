@@ -30,7 +30,7 @@ impl Application for App {
 
     fn new(_: ()) -> (App, Command<Self::Message>) {
         let app = App {
-            plotter: Plotter2D::new(),
+            plotter: Plotter2D::default(),
         };
         (app, Command::none())
     }
@@ -43,15 +43,13 @@ impl Application for App {
         iced::Theme::Dark
     }
 
-    fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
+    fn update(&mut self, _message: Self::Message) -> Command<Self::Message> {
         Command::none()
     }
 
     fn view(&self) -> Element<Self::Message> {
         let content = iced::widget::column!(
-            canvas(&self.plotter)
-                .width(Length::Fixed(700.0))
-                .height(Length::Fixed(700.0)),
+            self.plotter.display(),
         );
 
         container(content)
