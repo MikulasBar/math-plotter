@@ -8,7 +8,7 @@ use iced::{
 
 #[rustfmt::skip]
 use crate::{
-    utilities::{self, map_with_origin},
+    utilities,
     graph::Graph2D
 };
 
@@ -24,18 +24,7 @@ pub struct Plotter2D {
 // point factor = 350.0
 impl Plotter2D {
     pub fn new(width: Length, height: Length) -> Self {
-        let mut points: Vec<Point> = Vec::new();
-
-        for _ in 0..3 {
-            let point = utilities::rnd_point(100.0);
-            points.push(point);
-        }
-
-        let color = utilities::rnd_color();
-        let polygon = Graph2D::Polygon(points, color);
-        
         Self {
-            graphs: vec![polygon],
             width,
             height,
             ..Self::default()
@@ -46,6 +35,10 @@ impl Plotter2D {
         canvas(self)
             .width(self.width)
             .height(self.height)
+    }
+
+    pub fn update_view(&mut self, offset: Point) {
+        self.view.offset -= offset;
     }
 
     // pub fn push(&mut self, graph: Graph2D) {
@@ -105,15 +98,15 @@ impl<Message> canvas::Program<Message> for Plotter2D {
 
 
 struct View {
-    offset: (f32, f32),
-    zoom: f32,
+    offset: Point,
+    // zoom: f32,
 }
 
 impl Default for View {
     fn default() -> Self {
         Self {
-            offset: (0.0, 0.0),
-            zoom: 1.0
+            offset: Point::ORIGIN,
+            // zoom: 1.0
         }
     }
 }

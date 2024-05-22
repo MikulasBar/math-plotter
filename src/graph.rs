@@ -6,8 +6,6 @@ use iced::{
     Color, Point
 };
 
-use crate::utilities::map_with_origin;
-
 #[derive(Debug, Clone)]
 pub enum Graph2D {
     Point(Point, Color),
@@ -22,9 +20,7 @@ impl Graph2D {
         // mapping graph to origin
         match flipped + origin {
             Self::Point(point, color) => {
-                let point = map_with_origin(point, origin);
                 let circle = Path::circle(point, 5.0);
-
                 frame.fill(&circle, color)
             },
             Self::Polygon(points, color) => {
@@ -36,8 +32,7 @@ impl Graph2D {
                     builder.move_to(points[0]);
 
                     for p in points.iter().skip(1) {
-                        let point = map_with_origin(*p, origin);
-                        builder.line_to(point);
+                        builder.line_to(*p);
                     }
                     builder.close();
                 });

@@ -1,9 +1,13 @@
+use std::ops::Sub;
 use rand::random;
 use iced::{
     self,
     widget::canvas::{self, Path, Frame},
     Color, Point,
 };
+fn test() {
+    
+}
 
 pub fn background(frame: &mut Frame, color: Color) {
     let canvas_path = Path::rectangle(Point::ORIGIN, frame.size());
@@ -30,11 +34,12 @@ pub fn rnd_color() -> Color {
     }
 }
 
-/// This function maps a point to a new point with a given origin <br>
-/// This function flips the y-axis so the coordinates are more intuitive (X increases rightway, Y increases upwards)
-pub fn map_with_origin(point: Point, origin: Point) -> Point {
-    Point {
-        x: point.x + origin.x,
-        y: -point.y + origin.y,
-    }
-}
+// /// This function maps a point to a new point with a given origin <br>
+// /// This function flips the y-axis so the coordinates are more intuitive (X increases rightway, Y increases upwards)
+// pub fn map_with_origin(point: Point, origin: Point) -> Point {
+//     Point {
+//         x: point.x + origin.x,
+//         y: -point.y + origin.y,
+//     }
+// }
+
