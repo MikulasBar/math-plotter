@@ -1,12 +1,9 @@
 use std::vec;
-
-use rand::random;
-
 use iced::{
-    widget::canvas::{self, Path, Cache, Geometry, Frame},
-    Point, Rectangle, Renderer, Theme, Color, mouse
-    
+    mouse, widget::canvas::{self, path::lyon_path::polygon, Cache, Frame, Geometry, Path}, Color, Point, Rectangle, Renderer, Theme
 };
+
+use crate::utilities;
 
 pub struct Plotter2D {
     graphs: Vec<Graph2D>,
@@ -14,25 +11,21 @@ pub struct Plotter2D {
     cache: Cache
 }
 
+// point factor = 350.0
 impl Plotter2D {
     pub fn new() -> Self {
-        let mut graphs = Vec::new();
+        let mut points: Vec<Point> = Vec::new();
 
-        for _ in 0..40 {
-            let x = random_signed() * 350.0;
-            let y = random_signed() * 350.0;
-            let point = Point{x, y};
-
-            let r = random::<u8>();
-            let g = random::<u8>();
-            let b = random::<u8>();
-
-            let color = Color::from_rgb8(r, g, b);
-            graphs.push(Graph2D::Point(point, color));
+        for _ in 0..3 {
+            let point = utilities::rnd_point(100.0);
+            points.push(point);
         }
+
+        let color = utilities::rnd_color();
+        let polygon = Graph2D::Polygon(points, color);
         
         Self {
-            graphs,
+            graphs: vec![polygon],
             view: View::default(),
             cache: Cache::default()
         }
@@ -69,7 +62,7 @@ impl<Message> canvas::Program<Message> for Plotter2D {
         let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
             // fill background
             let bg_color = Color::from_rgb8(0x36, 0x39, 0x3F);
-            background(frame, bg_color);
+            utilities::background(frame, bg_color);
             
             // draw graphs
             let origin = Point::new(bounds.width / 2.0, bounds.height / 2.0);
@@ -81,31 +74,39 @@ impl<Message> canvas::Program<Message> for Plotter2D {
     }
 }
 
-fn background(frame: &mut Frame, color: Color) {
-    let canvas_path = Path::rectangle(Point::ORIGIN, frame.size());
-    frame.fill(&canvas_path, color);
-}
-
-fn random_signed() -> f32 {
-    let sign = if random::<bool>() { 1.0 } else { -1.0 };
-    sign * random::<f32>()
-}
-
 pub enum Graph2D {
     Point(Point, Color),
+    Polygon(Vec<Point>, Color),
 }
 
 impl Graph2D {
     pub fn draw(&self, frame: &mut Frame, origin: Point) {
         let Point{x: ox, y: oy} = origin;
-
+        
         match self {
-            Graph2D::Point(Point{x, y}, color) => {
+            Self::Point(Point{x, y}, color) => {
                 let point = Point::new(*x + ox, *y + oy);
                 let circle = Path::circle(point, 5.0);
 
                 frame.fill(&circle, *color)
             },
+            Self::Polygon(points, color) => {
+                if points.len() < 2 {
+                    return;
+                }
+
+                let path = Path::new(|builder| {
+                    builder.move_to(points[0]);
+
+                    for p in points.iter().skip(1) {
+                        let point = Point::new(p.x + ox, p.y + oy);
+                        builder.line_to(point);
+                    }
+                    builder.close();
+                });
+                
+                frame.fill(&path, *color);
+            }
         }
     }
 } 
