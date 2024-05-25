@@ -1,53 +1,61 @@
 use std::vec;
+use iced::widget::shader::wgpu::naga::back;
 #[rustfmt::skip]
 use iced::{
-    mouse,
-    widget::{canvas::{Cache, Frame, Geometry, Path}, Canvas, canvas},
+    mouse::{self, Event as MouseEvent},
+    widget::{
+        canvas::{
+            Cache, Frame, Geometry, Path,
+            Event as CanvasEvent,
+            event::Status as CanvasStatus
+        },
+        Canvas, canvas
+    },
     Color, Length, Point, Rectangle, Renderer, Theme
 };
 
 #[rustfmt::skip]
 use crate::{
-    utilities,
-    graph::Graph2D
+    utilities::{self, draw_background},
+    graph::Graph2D,
+    vector::Vec2,
+    events::*,
+    view::View,
 };
 
 pub struct Plotter2D {
     graphs: Vec<Graph2D>,
     view: View,
     cache: Cache,
-
-    width: Length,
-    height: Length
 }
 
-// point factor = 350.0
+
 impl Plotter2D {
-    pub fn new(width: Length, height: Length) -> Self {
+    pub fn new() -> Self {
         Self {
-            width,
-            height,
             ..Self::default()
         }
     }
 
-    pub fn display<M>(&self) -> Canvas<&Self, M> {
+    pub fn display(&self, width: Length, height: Length) -> Canvas<&Self, Message> {
         canvas(self)
-            .width(self.width)
-            .height(self.height)
+            .width(width)
+            .height(height)
     }
 
-    pub fn update_view(&mut self, offset: Point) {
-        self.view.offset -= offset;
+    // pub fn update_view(&mut self, offset: Point) {
+    //     self.view.offset -= offset;
+    // }
+
+    pub fn push(&mut self, graph: Graph2D) {
+        self.graphs.push(graph);
     }
 
-    // pub fn push(&mut self, graph: Graph2D) {
-    //     self.graphs.push(graph);
-    // }
-
-    // pub fn pop(&mut self) -> Option<Graph2D> {
-    //     self.graphs.pop()
-    // }
+    fn draw_graphs(&self, frame: &mut Frame, origin: Vec2) {
+        self.graphs.iter().for_each(|graph| {
+            graph.draw(frame, origin);
+        });
+    }
 }
 
 impl Default for Plotter2D {
@@ -56,16 +64,28 @@ impl Default for Plotter2D {
             graphs: vec![],
             view: View::default(),
             cache: Cache::default(),
-
-            width: Length::Fixed(700.0),
-            height: Length::Fixed(700.0)
         }
     }
 }
 
-impl<Message> canvas::Program<Message> for Plotter2D {
+impl canvas::Program<Message> for Plotter2D {
     type State = ();
-    
+
+    // fn update(
+    //         &self,
+    //         _state: &mut Self::State,
+    //         event: CanvasEvent,
+    //         _bounds: Rectangle,
+    //         _cursor: mouse::Cursor,
+    // ) -> (CanvasStatus, Option<Message>) {
+    //     if event == CANVAS_LEFT_BUTTON_PRESSED {
+    //         //self.cache.clear();
+    //         (CanvasStatus::Captured, Some(Message::Redraw))
+    //     } else {
+    //         (CanvasStatus::Ignored, None)
+    //     }
+    // }
+
     fn draw(
         &self,
         _state: &Self::State,
@@ -74,39 +94,16 @@ impl<Message> canvas::Program<Message> for Plotter2D {
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<Geometry> {
+        let bg_color = Color::from_rgb8(0x36, 0x39, 0x3F);
+        
         let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
-            // fill background
-            let bg_color = Color::from_rgb8(0x36, 0x39, 0x3F);
-            utilities::background(frame, bg_color);
-            
-            // draw graphs
-            let origin = Point::new(bounds.width / 2.0, bounds.height / 2.0);
-            // self.graphs.iter().for_each(|graph| {
-            //     graph.draw(frame, origin);
-            // });
+            draw_background(frame, bg_color);      
 
-            let g = Graph2D::Point(Point{x: 0.0, y: 0.0}, Color::WHITE);
-            let h = Graph2D::Point(Point{x: 0.0, y: 100.0}, Color::WHITE);
-            let j = Graph2D::Point(Point{x: 100.0, y: 0.0}, Color::WHITE);
-            g.draw(frame, origin);
-            h.draw(frame, origin);
-            j.draw(frame, origin);
+            // Draw graphs
+            let origin = Vec2::new(bounds.width, bounds.height) / 2.0;
+            self.draw_graphs(frame, origin);
         });
+
         vec![geometry]
-    }
-}
-
-
-struct View {
-    offset: Point,
-    // zoom: f32,
-}
-
-impl Default for View {
-    fn default() -> Self {
-        Self {
-            offset: Point::ORIGIN,
-            // zoom: 1.0
-        }
     }
 }

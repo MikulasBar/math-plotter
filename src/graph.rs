@@ -1,32 +1,37 @@
-use std::ops::Add;
+use std::{ops::Add, vec};
 #[rustfmt::skip]
 use iced::{
     mouse,
     widget::{canvas::{Frame, Path}, Canvas},
     Color, Point
 };
+use crate::vector::Vec2;
+
 
 #[derive(Debug, Clone)]
 pub enum Graph2D {
-    Point(Point, Color),
-    Polygon(Vec<Point>, Color),
+    Point(Vec2, Color),
+    Polygon(Vec<Vec2>, Color),
 }
 
 impl Graph2D {
-    pub fn draw(&self, frame: &mut Frame, origin: Point) {
-        let mut flipped = self.clone();
-        flipped.flip_y();
-        
-        // mapping graph to origin
-        match flipped + origin {
-            Self::Point(point, color) => {
+    pub fn draw(&self, frame: &mut Frame, origin: Vec2) {
+        match self {
+            Self::Point(vector, color) => {
+                let point = vector.prepare_for_drawing(&origin);
                 let circle = Path::circle(point, 5.0);
-                frame.fill(&circle, color)
+                frame.fill(&circle, *color)
             },
-            Self::Polygon(points, color) => {
-                if points.len() < 2 {
+            Self::Polygon(vectors, color) => {
+                // cannot draw a polygon with less than 2 points
+                // 2 points will be a line
+                if vectors.len() < 2 {
                     return;
                 }
+
+                let points: Vec<Point> = vectors.iter()
+                    .map(|v| v.prepare_for_drawing(&origin))
+                    .collect();
 
                 let path = Path::new(|builder| {
                     builder.move_to(points[0]);
@@ -37,41 +42,30 @@ impl Graph2D {
                     builder.close();
                 });
                 
-                frame.fill(&path, color);
+                frame.fill(&path, *color);
             }
         }
     }
 
-    pub fn flip_y(&mut self) {
+    pub fn _translate_to(&mut self, origin: &Vec2) {
+        use self::Graph2D::*;
+
         match self {
-            Self::Point(point, _) => point.y = -point.y,
-            Self::Polygon(points, _) => points.iter_mut().for_each(|point| point.y = -point.y)
+            Point(vector, _) => *vector += *origin,
+            Polygon(vectors, _) => {
+                *vectors = vectors.iter()
+                    .map(|v| *v + *origin)
+                    .collect();
+            },
         }
     }
 } 
 
 impl Default for Graph2D {
     fn default() -> Self {
-        Self::Point(Point::ORIGIN, Color::WHITE)
+        Self::Point(Vec2::ZERO, Color::WHITE)
     }
 }
 
-impl Add<Point> for Graph2D {
-    type Output = Self;
 
-    fn add(self, rhs: Point) -> Self::Output {
-        match self {
-            Self::Point(point, color) => Self::Point(
-                Point{x: point.x + rhs.x, y: point.y + rhs.y},
-                color
-            ),
-            Self::Polygon(points, color) => {
-                let points = points.iter()
-                    .map(|p| Point{x: p.x + rhs.x, y: p.y + rhs.y})
-                    .collect();
 
-                Self::Polygon(points, color)
-            }
-        }
-    }
-} 

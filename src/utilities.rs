@@ -1,17 +1,16 @@
 use std::ops::Sub;
 use rand::random;
+
+#[rustfmt::skip]
 use iced::{
     self,
-    widget::canvas::{self, Path, Frame},
-    Color, Point,
+    widget::canvas::{self, Cache, Frame, Geometry, Path},
+    Color, Point, Rectangle, Renderer
 };
-fn test() {
-    
-}
 
-pub fn background(frame: &mut Frame, color: Color) {
-    let canvas_path = Path::rectangle(Point::ORIGIN, frame.size());
-    frame.fill(&canvas_path, color);
+pub fn draw_background(frame: &mut Frame, color: Color) {
+    let path = Path::rectangle(Point::ORIGIN, frame.size());
+    frame.fill(&path, color);
 }
 
 fn rnd_signed() -> f32 {
@@ -33,13 +32,3 @@ pub fn rnd_color() -> Color {
         a: 1.0,
     }
 }
-
-// /// This function maps a point to a new point with a given origin <br>
-// /// This function flips the y-axis so the coordinates are more intuitive (X increases rightway, Y increases upwards)
-// pub fn map_with_origin(point: Point, origin: Point) -> Point {
-//     Point {
-//         x: point.x + origin.x,
-//         y: -point.y + origin.y,
-//     }
-// }
-

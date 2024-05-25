@@ -1,13 +1,19 @@
 
+use iced::widget::{canvas::Program, Canvas};
 #[rustfmt::skip]
 use iced::{
     self,
     widget::{canvas, column, container, text, text_input},
-    Alignment, Application, Command, Element, Length
+    Alignment, Application, Command, Element, Length, Color,
 };
 
-use math_lib::{self, Parser, FnTree, Function};
-use crate::plotter::*;
+//use math_lib::{self, Parser, FnTree, Function};
+use crate::{
+    graph::Graph2D,
+    vector::Vec2,
+    plotter::Plotter2D,
+    events::Message,
+};
 
 pub fn run_app() -> iced::Result {
     App::run(iced::Settings::default())
@@ -17,11 +23,6 @@ struct App {
     plotter: Plotter2D,
 }
 
-#[derive(Debug, Clone)]
-enum Message {
-
-}
-
 impl Application for App {
     type Executor = iced::executor::Default;
     type Message = Message;
@@ -29,11 +30,18 @@ impl Application for App {
     type Theme = iced::Theme;
 
     fn new(_flags: ()) -> (App, Command<Self::Message>) {
+        let mut plotter = Plotter2D::default();
+
+        let a = Graph2D::Point(Vec2::ZERO, Color::WHITE);
+        let b = Graph2D::Point(Vec2::UNIT_X * 100.0, Color::WHITE);
+        let c = Graph2D::Point(Vec2::UNIT_Y * 100.0, Color::WHITE);
+
+        plotter.push(a);
+        plotter.push(b);
+        plotter.push(c);
+
         let app = App {
-            plotter: Plotter2D::new(
-                Length::Fixed(700.0),
-                Length::Fixed(700.0)
-            ),
+            plotter,
         };
         (app, Command::none())
     }
@@ -51,37 +59,15 @@ impl Application for App {
     }
 
     fn view(&self) -> Element<Self::Message> {
-        let content = iced::widget::column!(
-            self.plotter.display(),
-        );
+        let content = canvas(&self.plotter)
+            .width(Length::Fixed(700.0))
+            .height(Length::Fixed(700.0));
 
         container(content)
             .width(Length::Fill)
             .height(Length::Fill)
-            .center_y()
             .center_x()
+            .center_y()
             .into()
     }
-}
-
-use maplit::hashmap;
-
-pub fn calculate(input: &str) -> f64 {
-    let mut parser = Parser::new();
-    let wrapped_func = parser.parse(input);
-
-    if let Ok(func) = wrapped_func {
-        let func = FnTree::new(func);
-
-        let args = hashmap!{
-            "x" => 0.0,
-        };
-
-        let result = func.evaluate(&args);
-
-        if let Ok(value) = result {
-            return value
-        }
-    }
-    f64::NAN
 }
