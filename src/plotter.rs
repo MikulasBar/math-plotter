@@ -51,6 +51,18 @@ impl Plotter2D {
         self.graphs.push(graph);
     }
 
+    pub fn add_graphs(&mut self, graphs: Vec<Graph2D>) {
+        self.graphs.extend(graphs);
+    }
+
+    pub fn clear_graphs(&mut self) {
+        self.graphs.clear();
+    }
+
+    pub fn clear_cache(&self) {
+        self.cache.clear();
+    }
+
     fn draw_graphs(&self, frame: &mut Frame, origin: Vec2) {
         self.graphs.iter().for_each(|graph| {
             graph.draw(frame, origin);
@@ -71,20 +83,19 @@ impl Default for Plotter2D {
 impl canvas::Program<Message> for Plotter2D {
     type State = ();
 
-    // fn update(
-    //         &self,
-    //         _state: &mut Self::State,
-    //         event: CanvasEvent,
-    //         _bounds: Rectangle,
-    //         _cursor: mouse::Cursor,
-    // ) -> (CanvasStatus, Option<Message>) {
-    //     if event == CANVAS_LEFT_BUTTON_PRESSED {
-    //         //self.cache.clear();
-    //         (CanvasStatus::Captured, Some(Message::Redraw))
-    //     } else {
-    //         (CanvasStatus::Ignored, None)
-    //     }
-    // }
+    fn update(
+            &self,
+            _state: &mut Self::State,
+            event: CanvasEvent,
+            _bounds: Rectangle,
+            _cursor: mouse::Cursor,
+    ) -> (CanvasStatus, Option<Message>) {
+        if event == CANVAS_LEFT_BUTTON_PRESSED {
+            (CanvasStatus::Captured, Some(Message::Redraw))
+        } else {
+            (CanvasStatus::Ignored, None)
+        }
+    }
 
     fn draw(
         &self,

@@ -9,10 +9,7 @@ use iced::{
 
 //use math_lib::{self, Parser, FnTree, Function};
 use crate::{
-    graph::Graph2D,
-    vector::Vec2,
-    plotter::Plotter2D,
-    events::Message,
+    events::Message, graph::Graph2D, plotter::Plotter2D, utilities::{add_control_points, rnd_color, rnd_vector}, vector::Vec2
 };
 
 pub fn run_app() -> iced::Result {
@@ -31,14 +28,7 @@ impl Application for App {
 
     fn new(_flags: ()) -> (App, Command<Self::Message>) {
         let mut plotter = Plotter2D::default();
-
-        let a = Graph2D::Point(Vec2::ZERO, Color::WHITE);
-        let b = Graph2D::Point(Vec2::UNIT_X * 100.0, Color::WHITE);
-        let c = Graph2D::Point(Vec2::UNIT_Y * 100.0, Color::WHITE);
-
-        plotter.push(a);
-        plotter.push(b);
-        plotter.push(c);
+        add_control_points(&mut plotter);
 
         let app = App {
             plotter,
@@ -54,7 +44,23 @@ impl Application for App {
         iced::Theme::Dark
     }
 
-    fn update(&mut self, _message: Self::Message) -> Command<Self::Message> {
+    fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
+        match message {
+            Message::Redraw => {
+                self.plotter.clear_graphs();
+                self.plotter.clear_cache();
+
+                let graphs = (0..10).into_iter()
+                    .map(|_| {
+                        let vec = rnd_vector(100.0);
+                        let color = rnd_color();
+                        Graph2D::Point(vec, color)
+                    })
+                    .collect::<Vec<_>>();
+
+                self.plotter.add_graphs(graphs);
+            }
+        }
         Command::none()
     }
 
