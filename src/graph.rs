@@ -5,7 +5,10 @@ use iced::{
     widget::{canvas::{Frame, Path}, Canvas},
     Color, Point
 };
-use crate::vector::Vec2;
+use crate::{
+    vector::Vec2,
+    utilities,
+};
 
 
 #[derive(Debug, Clone)]
@@ -47,17 +50,14 @@ impl Graph2D {
         }
     }
 
-    pub fn _translate_to(&mut self, origin: &Vec2) {
-        use self::Graph2D::*;
-
-        match self {
-            Point(vector, _) => *vector += *origin,
-            Polygon(vectors, _) => {
-                *vectors = vectors.iter()
-                    .map(|v| *v + *origin)
-                    .collect();
-            },
-        }
+    pub fn random_points(num: u32, factor: f32, color_fn: fn() -> Color) -> Vec<Self> {
+        (0..num).into_iter()
+            .map(|_| {
+                let vector = Vec2::random(factor);
+                let color = color_fn();
+                Self::Point(vector, color)
+            })
+            .collect()
     }
 } 
 

@@ -8,5 +8,7 @@ edition = "2021"
 [dependencies]
 maplit = "1.0.2"
 rand = "0.8.5"
+lazy_static = "1.4.0"
+smol_str = "0.2.2"
 iced = {version = "0.12.1", features = ["canvas", "debug"]}
 math-lib = { git = "https://github.com/MikulasBar/rust-math-library.git"}

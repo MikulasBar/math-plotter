@@ -1,7 +1,7 @@
 
 use iced::{self, Point};
 use crate::{
-    
+    utilities::rnd_signed,
 };
 use std::ops::{Add, Sub, AddAssign, SubAssign, Mul, Div};
 
@@ -46,6 +46,12 @@ impl Vec2 {
             x: self.x,
             y: -self.y,
         }
+    }
+
+    pub fn random(factor: f32) -> Vec2 {
+        let x = rnd_signed();
+        let y = rnd_signed();
+        Vec2{x, y} * factor
     }
 }
 

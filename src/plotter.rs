@@ -37,11 +37,11 @@ impl Plotter2D {
         }
     }
 
-    pub fn display(&self, width: Length, height: Length) -> Canvas<&Self, Message> {
-        canvas(self)
-            .width(width)
-            .height(height)
-    }
+    // pub fn canvas(&self, width: Length, height: Length) -> Canvas<&Self, Message> {
+    //     canvas(self)
+    //         .width(width)
+    //         .height(height)
+    // }
 
     // pub fn update_view(&mut self, offset: Point) {
     //     self.view.offset -= offset;
@@ -68,6 +68,14 @@ impl Plotter2D {
             graph.draw(frame, origin);
         });
     }
+
+    pub fn add_control_points(&mut self) {
+        let center = Graph2D::Point(Vec2::ZERO, Color::WHITE);
+        let right = Graph2D::Point(Vec2::UNIT_X * 100.0, Color::WHITE);
+        let up = Graph2D::Point(Vec2::UNIT_Y * 100.0, Color::WHITE);
+    
+        self.add_graphs(vec![center, right, up])
+    }
 }
 
 impl Default for Plotter2D {
@@ -90,7 +98,7 @@ impl canvas::Program<Message> for Plotter2D {
             bounds: Rectangle,
             cursor: mouse::Cursor,
     ) -> (CanvasStatus, Option<Message>) {
-        if event == CANVAS_LEFT_BUTTON_PRESSED && cursor.is_over(bounds) {
+        if event == CANVAS_KEY_R_PRESSED {
             (CanvasStatus::Captured, Some(Message::Redraw))
         } else {
             (CanvasStatus::Ignored, None)

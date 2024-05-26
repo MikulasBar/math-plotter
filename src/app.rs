@@ -8,8 +8,13 @@ use iced::{
 };
 
 //use math_lib::{self, Parser, FnTree, Function};
+#[rustfmt::skip]
 use crate::{
-    events::Message, graph::Graph2D, plotter::Plotter2D, utilities::{add_control_points, rnd_color, rnd_vector}, vector::Vec2
+    events::Message,
+    graph::Graph2D,
+    plotter::Plotter2D,
+    utilities::{rnd_color},
+    vector::Vec2
 };
 
 pub fn run_app() -> iced::Result {
@@ -28,7 +33,7 @@ impl Application for App {
 
     fn new(_flags: ()) -> (App, Command<Self::Message>) {
         let mut plotter = Plotter2D::default();
-        add_control_points(&mut plotter);
+        plotter.add_control_points();
 
         let app = App {
             plotter,
@@ -50,13 +55,7 @@ impl Application for App {
                 self.plotter.clear_graphs();
                 self.plotter.clear_cache();
 
-                let graphs = (0..10).into_iter()
-                    .map(|_| {
-                        let vec = rnd_vector(100.0);
-                        let color = rnd_color();
-                        Graph2D::Point(vec, color)
-                    })
-                    .collect::<Vec<_>>();
+                let graphs = Graph2D::random_points(20, 200.0, || rnd_color());
 
                 self.plotter.add_graphs(graphs);
             }
