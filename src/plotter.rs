@@ -7,7 +7,7 @@ use iced::{
         canvas::{
             Cache, Frame, Geometry, Path,
             Event as CanvasEvent,
-            event::Status as CanvasStatus
+            event::Status as CanvasStatus,
         },
         Canvas, canvas
     },
@@ -87,10 +87,10 @@ impl canvas::Program<Message> for Plotter2D {
             &self,
             _state: &mut Self::State,
             event: CanvasEvent,
-            _bounds: Rectangle,
-            _cursor: mouse::Cursor,
+            bounds: Rectangle,
+            cursor: mouse::Cursor,
     ) -> (CanvasStatus, Option<Message>) {
-        if event == CANVAS_LEFT_BUTTON_PRESSED {
+        if event == CANVAS_LEFT_BUTTON_PRESSED && cursor.is_over(bounds) {
             (CanvasStatus::Captured, Some(Message::Redraw))
         } else {
             (CanvasStatus::Ignored, None)
