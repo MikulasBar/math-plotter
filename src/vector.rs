@@ -5,9 +5,7 @@ use crate::{
 };
 use std::ops::{Add, Sub, AddAssign, SubAssign, Mul, Div};
 
-
-
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vec2<T = f32> {
     pub x: T,
     pub y: T,
@@ -22,12 +20,20 @@ impl Vec2 {
         Self { x, y }
     }
 
+    pub fn translate(&mut self, translation: Vec2) {
+        *self = *self + translation;
+    }
+
+    pub fn scale(&mut self, factor: f32) {
+        *self = *self * factor;
+    }
+
     /// Prepare the vector for drawing on the canvas <br>
     /// Flips the y coordinate so that y increases upwards <br>
     /// Adds the origin to the vector so that the vector is drawn at the correct position <br>
     /// Converts it to a Point
     pub fn prepare_for_drawing(&self, origin: &Vec2) -> Point {
-        Point::from(self.flip_y() + *origin)
+        Point::from(*self/*.flip_y()*/ + *origin)
     }
 
     /// Flips the x coordinate of the vector <br>
@@ -67,6 +73,14 @@ impl From<&Vec2> for Point {
     }
 }
 
+impl From<Point> for Vec2 {
+    fn from(point: Point) -> Self {
+        Self {
+            x: point.x,
+            y: point.y,
+        }
+    }
+} 
 
 impl Add for Vec2 {
     type Output = Self;
@@ -90,17 +104,17 @@ impl Sub for Vec2 {
     }
 }
 
-impl AddAssign for Vec2 {
-    fn add_assign(&mut self, rhs: Self) {
-        *self = *self + rhs;
-    }
-}
+// impl AddAssign for Vec2 {
+//     fn add_assign(&mut self, rhs: Self) {
+//         *self = *self + rhs;
+//     }
+// }
 
-impl SubAssign for Vec2 {
-    fn sub_assign(&mut self, rhs: Self) {
-        *self = *self - rhs;
-    }
-}
+// impl SubAssign for Vec2 {
+//     fn sub_assign(&mut self, rhs: Self) {
+//         *self = *self - rhs;
+//     }
+// }
 
 
 impl Mul<f32> for Vec2 {

@@ -1,8 +1,8 @@
-use std::vec;
-use iced::widget::shader::wgpu::naga::back;
+use std::{default, vec};
+use iced::{event, futures::stream::Skip, widget::{canvas::path::lyon_path::Position, shader::wgpu::naga::back}};
 #[rustfmt::skip]
 use iced::{
-    mouse::{self, Event as MouseEvent},
+    mouse::{self, Event as MouseEvent, Button as MouseButton},
     widget::{
         canvas::{
             Cache, Frame, Geometry, Path,
@@ -14,11 +14,14 @@ use iced::{
     Color, Length, Point, Rectangle, Renderer, Theme
 };
 
+// macros
+use crate::event;
+
 #[rustfmt::skip]
 use crate::{
     utilities::{self, draw_background},
     graph::Graph2D,
-    vector::Vec2,
+    vector::*,
     events::*,
     view::View,
 };
@@ -29,6 +32,12 @@ pub struct Plotter2D {
     cache: Cache,
 }
 
+#[derive(Debug, Clone, Default, PartialEq)]
+pub enum State {
+    #[default]
+    Idle,
+    LeftButtonDown(Vec2),
+}
 
 impl Plotter2D {
     pub fn new() -> Self {
@@ -63,10 +72,20 @@ impl Plotter2D {
         self.cache.clear();
     }
 
+    // pub fn clear(&mut self) {
+    //     self.clear_graphs();
+    //     self.clear_cache();
+    // }
+
     fn draw_graphs(&self, frame: &mut Frame, origin: Vec2) {
         self.graphs.iter().for_each(|graph| {
             graph.draw(frame, origin);
         });
+    }
+
+    pub fn translate_graphs(&mut self, translation: Vec2) {
+        (&mut self.graphs).into_iter()
+            .for_each(|g: &mut Graph2D| g.translate(translation))
     }
 
     pub fn add_control_points(&mut self) {
@@ -89,21 +108,44 @@ impl Default for Plotter2D {
 }
 
 impl canvas::Program<Message> for Plotter2D {
-    type State = ();
+    type State = State;
 
     fn update(
             &self,
-            _state: &mut Self::State,
+            state: &mut Self::State,
             event: CanvasEvent,
             bounds: Rectangle,
             cursor: mouse::Cursor,
     ) -> (CanvasStatus, Option<Message>) {
-        if event == CANVAS_KEY_R_PRESSED {
-            (CanvasStatus::Captured, Some(Message::Redraw))
-        } else {
-            (CanvasStatus::Ignored, None)
+        if !cursor.is_over(bounds) {
+            return (CanvasStatus::Ignored, None);
+        }
+        
+        match event {
+            event!(LEFT_BUTTON_PRESSED) => {
+                let pos = cursor.position().unwrap().into();
+                *state = State::LeftButtonDown(pos);
+                (CanvasStatus::Captured, None)
+            },
+            event!(LEFT_BUTTON_RELEASED) => {
+                *state = State::Idle;
+                (CanvasStatus::Captured, None)
+            },
+            event!(MOUSE_MOVE: new_pos) => {
+                match *state {
+                    State::LeftButtonDown(old_pos) => {
+                        let translation = Vec2::from(new_pos) - old_pos;
+                        *state = State::LeftButtonDown(new_pos.into());
+                        return (CanvasStatus::Captured, Some(Message::Translate(translation)))
+                    },
+                    _ => (),
+                }
+                (CanvasStatus::Ignored, None)
+            },
+            _ => (CanvasStatus::Ignored, None),
         }
     }
+
 
     fn draw(
         &self,

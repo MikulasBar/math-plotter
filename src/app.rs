@@ -4,7 +4,7 @@ use iced::widget::{canvas::Program, Canvas};
 use iced::{
     self,
     widget::{canvas, column, container, text, text_input},
-    Alignment, Application, Command, Element, Length, Color,
+    Alignment, Application, Command, Element, Length, Color
 };
 
 //use math_lib::{self, Parser, FnTree, Function};
@@ -52,12 +52,16 @@ impl Application for App {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Message::Redraw => {
-                self.plotter.clear_graphs();
                 self.plotter.clear_cache();
+                // self.plotter.clear_graphs();
 
-                let graphs = Graph2D::random_points(20, 200.0, || rnd_color());
+                // let graphs = Graph2D::random_points(20, 200.0, || rnd_color());
 
-                self.plotter.add_graphs(graphs);
+                // self.plotter.add_graphs(graphs);
+            },
+            Message::Translate(vector) => {
+                self.plotter.clear_cache();
+                self.plotter.translate_graphs(vector);
             }
         }
         Command::none()

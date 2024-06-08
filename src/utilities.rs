@@ -33,4 +33,3 @@ pub fn rnd_color() -> Color {
         a: 1.0,
     }
 }
-

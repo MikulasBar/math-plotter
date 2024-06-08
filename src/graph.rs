@@ -1,4 +1,5 @@
-use std::{ops::Add, vec};
+use std::{borrow::BorrowMut, ops::Add, vec};
+use iced::widget::shader::wgpu::hal::TextureViewDescriptor;
 #[rustfmt::skip]
 use iced::{
     mouse,
@@ -58,6 +59,24 @@ impl Graph2D {
                 Self::Point(vector, color)
             })
             .collect()
+    }
+
+    fn mutate_vecs(&mut self, f: impl Fn(&mut Vec2)) {
+        match self {
+            Self::Point(vector, _) => f(vector),
+            Self::Polygon(vectors, _) => {
+                vectors.into_iter()
+                    .for_each(f)
+            },
+        }
+    }
+
+    pub fn translate(&mut self, translation: Vec2) {
+        self.mutate_vecs(|v| v.translate(translation));
+    }
+
+    pub fn scale(&mut self, factor: f32) {
+        self.mutate_vecs(|v| v.scale(factor))
     }
 } 
 
