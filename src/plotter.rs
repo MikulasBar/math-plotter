@@ -60,24 +60,15 @@ impl Plotter2D {
         self.graphs.extend(graphs);
     }
 
-    // pub fn clear_graphs(&mut self) {
-    //     self.graphs.clear();
-    // }
-
     pub fn clear_cache(&self) {
         self.cache.clear();
     }
 
-    fn draw_graphs(&self, frame: &mut Frame, origin: Vec2) {
+    fn draw_graphs(&self, frame: &mut Frame, origin: &Vec2) {
         self.graphs.iter().for_each(|graph| {
             graph.draw(frame, origin, &self.view);
         });
     }
-
-    // pub fn translate_graphs(&mut self, translation: Vec2) {
-    //     (&mut self.graphs).into_iter()
-    //         .for_each(|g: &mut Graph2D| g.translate(translation))
-    // }
 
     pub fn add_control_points(&mut self) {
         let center = Graph2D::Point(Vec2::ZERO, Color::WHITE);
@@ -155,7 +146,7 @@ impl canvas::Program<Message> for Plotter2D {
 
             // Draw graphs
             let origin = Vec2::new(bounds.width, bounds.height) / 2.0;
-            self.draw_graphs(frame, origin);
+            self.draw_graphs(frame, &origin);
         });
 
         vec![geometry]

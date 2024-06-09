@@ -30,11 +30,11 @@ impl Vec2 {
     }
 
     /// Prepare the vector for drawing on the canvas <br>
-    /// Flips the y coordinate so that y increases upwards <br>
-    /// Adds the origin to the vector so that the vector is drawn at the correct position <br>
-    /// Converts it to a Point
+    /// Flips the Y coordinate so the Y increases upwards <br>
+    /// Translate the vector according to `view` and `origin` <br>
+    /// Converts [`Vec2`] to [`Point`]
     pub fn prepare_for_drawing(&self, origin: &Vec2, view: &View) -> Point {
-        let vector = *self + *origin + view.offset;
+        let vector = self.flip_y() + *origin + view.offset;
         Point::from(vector)
     }
 
