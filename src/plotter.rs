@@ -104,26 +104,39 @@ impl canvas::Program<Message> for Plotter2D {
         }
         
         match event {
-            event!(LEFT_BUTTON_PRESSED) => {
+            event!(MOUSE_LEFT_DOWN) => {
                 let pos: Vec2 = cursor.position().unwrap().into();
                 *state = State::LeftButtonDown(pos);
             },
-            event!(LEFT_BUTTON_RELEASED) => {
+            event!(MOUSE_LEFT_UP) => {
                 *state = State::Idle;
             },
             event!(MOUSE_MOVE: new_pos) => {
                 if let State::LeftButtonDown(old_pos) = *state {
-                    // let offset: Vec2 = cursor.position_in(bounds).unwrap().into();
-                    let offset: Vec2 = Vec2::from(new_pos) - old_pos;
                     let old_offset = self.view.offset;
+                    let offset: Vec2 = Vec2::from(new_pos) - old_pos;
 
-                    let view = View::new(old_offset + offset);
+                    let view = View {
+                        offset: old_offset + offset,
+                        ..self.view
+                    };
 
+                    // update cursor position
                     *state = State::LeftButtonDown(new_pos.into());
 
                     return (CanvasStatus::Captured, Some(Message::UpdateView(view)))
                 }
-                return (CanvasStatus::Ignored, None)
+            },
+            event!(MOUSE_SCROLL: delta) => {
+                let old_zoom = self.view.zoom;
+                let zoom = View::zoom_from_delta(delta);
+                
+                let view = View {
+                    zoom: old_zoom + zoom,
+                    ..self.view
+                };
+
+                return (CanvasStatus::Captured, Some(Message::UpdateView(view)))
             },
             _ => (),
         }

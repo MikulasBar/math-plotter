@@ -4,7 +4,7 @@ use smol_str::SmolStr;
 use iced::{
     self,
     Point,
-    mouse::{self, Button as MouseButton, Event as MouseEvent},
+    mouse::{self, Button as MouseButton, Event as MouseEvent, ScrollDelta},
     widget::canvas::{Event as CanvasEvent},
 };
 use crate::vector::Vec2;
@@ -24,14 +24,21 @@ macro_rules! event {
             }
         )
     };
-    (LEFT_BUTTON_PRESSED) => {
+    (MOUSE_LEFT_DOWN) => {
         CanvasEvent::Mouse(
             MouseEvent::ButtonPressed(MouseButton::Left)
         )
     };
-    (LEFT_BUTTON_RELEASED) => {
+    (MOUSE_LEFT_UP) => {
         CanvasEvent::Mouse(
             MouseEvent::ButtonReleased(MouseButton::Left)
+        )
+    };
+    (MOUSE_SCROLL: $delta:ident) => {
+        CanvasEvent::Mouse(
+            MouseEvent::WheelScrolled {
+                delta: $delta
+            }
         )
     };
 }

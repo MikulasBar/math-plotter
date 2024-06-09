@@ -33,8 +33,10 @@ impl Vec2 {
     /// Flips the Y coordinate so the Y increases upwards <br>
     /// Translate the vector according to `view` and `origin` <br>
     /// Converts [`Vec2`] to [`Point`]
-    pub fn prepare_for_drawing(&self, origin: &Vec2, view: &View) -> Point {
-        let vector = self.flip_y() + *origin + view.offset;
+    pub fn prepare_for_drawing(&self, origin: Vec2, view: &View) -> Point {
+        let View {offset, zoom} = *view;
+
+        let vector = self.flip_y() * zoom + origin + offset;
         Point::from(vector)
     }
 
