@@ -6,21 +6,13 @@ use iced::{
     Point,
     mouse::{self, Button as MouseButton, Event as MouseEvent},
     widget::canvas::{Event as CanvasEvent},
-    keyboard::{
-        self,
-        key::Key,
-        Location as KeyLocation,
-        Modifiers as KeyboardModifiers,
-        Event as KeyboardEvent,
-        
-    },
 };
 use crate::vector::Vec2;
+use crate::view::View;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    Redraw,
-    Translate(Vec2)
+    UpdateView(View)
 }
 
 #[macro_export]
@@ -43,19 +35,3 @@ macro_rules! event {
         )
     };
 }
-
-
-
-
-// pub const CANVAS_KEY_R_PRESSED: CanvasEvent = CanvasEvent::Keyboard(
-//     KeyboardEvent::KeyPressed {
-//         key: KEY_R,
-//         location: KeyLocation::Standard,
-//         modifiers: KeyboardModifiers::empty(),
-//         text: Some(TEXT_R),
-//     }
-// );
-
-
-// const KEY_R: Key = Key::Character(TEXT_R);
-// const TEXT_R: SmolStr = SmolStr::new_static("r");

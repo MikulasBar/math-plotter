@@ -9,6 +9,7 @@ use iced::{
 use crate::{
     vector::Vec2,
     utilities,
+    view::View
 };
 
 
@@ -19,10 +20,10 @@ pub enum Graph2D {
 }
 
 impl Graph2D {
-    pub fn draw(&self, frame: &mut Frame, origin: Vec2) {
+    pub fn draw(&self, frame: &mut Frame, origin: Vec2, view: &View) {
         match self {
             Self::Point(vector, color) => {
-                let point = vector.prepare_for_drawing(&origin);
+                let point = vector.prepare_for_drawing(&origin, view);
                 let circle = Path::circle(point, 5.0);
                 frame.fill(&circle, *color)
             },
@@ -34,7 +35,7 @@ impl Graph2D {
                 }
 
                 let points: Vec<Point> = vectors.iter()
-                    .map(|v| v.prepare_for_drawing(&origin))
+                    .map(|v| v.prepare_for_drawing(&origin, view))
                     .collect();
 
                 let path = Path::new(|builder| {

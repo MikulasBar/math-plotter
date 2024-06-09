@@ -28,8 +28,8 @@ use crate::{
 
 pub struct Plotter2D {
     graphs: Vec<Graph2D>,
-    view: View,
     cache: Cache,
+    view: View,
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -52,41 +52,32 @@ impl Plotter2D {
     //         .height(height)
     // }
 
-    // pub fn update_view(&mut self, offset: Point) {
-    //     self.view.offset -= offset;
-    // }
-
-    pub fn push(&mut self, graph: Graph2D) {
-        self.graphs.push(graph);
+    pub fn update_view(&mut self, view: View) {
+        self.view = view;
     }
 
     pub fn add_graphs(&mut self, graphs: Vec<Graph2D>) {
         self.graphs.extend(graphs);
     }
 
-    pub fn clear_graphs(&mut self) {
-        self.graphs.clear();
-    }
+    // pub fn clear_graphs(&mut self) {
+    //     self.graphs.clear();
+    // }
 
     pub fn clear_cache(&self) {
         self.cache.clear();
     }
 
-    // pub fn clear(&mut self) {
-    //     self.clear_graphs();
-    //     self.clear_cache();
-    // }
-
     fn draw_graphs(&self, frame: &mut Frame, origin: Vec2) {
         self.graphs.iter().for_each(|graph| {
-            graph.draw(frame, origin);
+            graph.draw(frame, origin, &self.view);
         });
     }
 
-    pub fn translate_graphs(&mut self, translation: Vec2) {
-        (&mut self.graphs).into_iter()
-            .for_each(|g: &mut Graph2D| g.translate(translation))
-    }
+    // pub fn translate_graphs(&mut self, translation: Vec2) {
+    //     (&mut self.graphs).into_iter()
+    //         .for_each(|g: &mut Graph2D| g.translate(translation))
+    // }
 
     pub fn add_control_points(&mut self) {
         let center = Graph2D::Point(Vec2::ZERO, Color::WHITE);
@@ -101,8 +92,8 @@ impl Default for Plotter2D {
     fn default() -> Self {
         Self {
             graphs: vec![],
-            view: View::default(),
             cache: Cache::default(),
+            view: View::default(),
         }
     }
 }
@@ -123,27 +114,29 @@ impl canvas::Program<Message> for Plotter2D {
         
         match event {
             event!(LEFT_BUTTON_PRESSED) => {
-                let pos = cursor.position().unwrap().into();
+                let pos: Vec2 = cursor.position().unwrap().into();
                 *state = State::LeftButtonDown(pos);
-                (CanvasStatus::Captured, None)
             },
             event!(LEFT_BUTTON_RELEASED) => {
                 *state = State::Idle;
-                (CanvasStatus::Captured, None)
             },
             event!(MOUSE_MOVE: new_pos) => {
-                match *state {
-                    State::LeftButtonDown(old_pos) => {
-                        let translation = Vec2::from(new_pos) - old_pos;
-                        *state = State::LeftButtonDown(new_pos.into());
-                        return (CanvasStatus::Captured, Some(Message::Translate(translation)))
-                    },
-                    _ => (),
+                if let State::LeftButtonDown(old_pos) = *state {
+                    // let offset: Vec2 = cursor.position_in(bounds).unwrap().into();
+                    let offset: Vec2 = Vec2::from(new_pos) - old_pos;
+                    let old_offset = self.view.offset;
+
+                    let view = View::new(old_offset + offset);
+
+                    *state = State::LeftButtonDown(new_pos.into());
+
+                    return (CanvasStatus::Captured, Some(Message::UpdateView(view)))
                 }
-                (CanvasStatus::Ignored, None)
+                return (CanvasStatus::Ignored, None)
             },
-            _ => (CanvasStatus::Ignored, None),
+            _ => (),
         }
+        (CanvasStatus::Ignored, None)
     }
 
 

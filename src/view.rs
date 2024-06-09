@@ -3,9 +3,18 @@ use crate::{
 };
 
 
+#[derive(Debug, Clone)]
 pub struct View {
-    offset: Vec2,
+    pub offset: Vec2,
     // zoom: f32,
+}
+
+impl View {
+    pub fn new(offset: Vec2) -> Self {
+        Self {
+            offset
+        }
+    }
 }
 
 impl Default for View {

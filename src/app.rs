@@ -51,17 +51,9 @@ impl Application for App {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
-            Message::Redraw => {
+            Message::UpdateView(view) => {
                 self.plotter.clear_cache();
-                // self.plotter.clear_graphs();
-
-                // let graphs = Graph2D::random_points(20, 200.0, || rnd_color());
-
-                // self.plotter.add_graphs(graphs);
-            },
-            Message::Translate(vector) => {
-                self.plotter.clear_cache();
-                self.plotter.translate_graphs(vector);
+                self.plotter.update_view(view);
             }
         }
         Command::none()

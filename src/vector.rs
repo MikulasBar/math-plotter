@@ -2,6 +2,7 @@
 use iced::{self, Point};
 use crate::{
     utilities::rnd_signed,
+    view::View,
 };
 use std::ops::{Add, Sub, AddAssign, SubAssign, Mul, Div};
 
@@ -32,8 +33,9 @@ impl Vec2 {
     /// Flips the y coordinate so that y increases upwards <br>
     /// Adds the origin to the vector so that the vector is drawn at the correct position <br>
     /// Converts it to a Point
-    pub fn prepare_for_drawing(&self, origin: &Vec2) -> Point {
-        Point::from(*self/*.flip_y()*/ + *origin)
+    pub fn prepare_for_drawing(&self, origin: &Vec2, view: &View) -> Point {
+        let vector = *self + *origin + view.offset;
+        Point::from(vector)
     }
 
     /// Flips the x coordinate of the vector <br>
