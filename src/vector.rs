@@ -1,10 +1,13 @@
+use std::ops::{Add, Sub, AddAssign, SubAssign, Mul, Div};
 
 use iced::{self, Point};
+
 use crate::{
     utilities::rnd_signed,
-    view::View,
+    plotter::{
+        view::View,
+    },
 };
-use std::ops::{Add, Sub, AddAssign, SubAssign, Mul, Div};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vec2<T = f32> {

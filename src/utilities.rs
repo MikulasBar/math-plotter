@@ -1,4 +1,3 @@
-use std::ops::Sub;
 use rand::random;
 
 #[rustfmt::skip]
@@ -8,10 +7,13 @@ use iced::{
     Color, Point
 };
 
+#[rustfmt::skip]
 use crate::{
-    plotter::Plotter2D,
     vector::Vec2,
-    graph::Graph2D,
+    plotter::{
+        plotter::Plotter2D,
+        graph::Graph2D,
+    },
 };
 
 pub fn draw_background(frame: &mut Frame, color: Color) {

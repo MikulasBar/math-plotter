@@ -1,5 +1,5 @@
+use iced::widget::{Canvas};
 
-use iced::widget::{canvas::Program, Canvas};
 #[rustfmt::skip]
 use iced::{
     self,
@@ -7,12 +7,13 @@ use iced::{
     Alignment, Application, Command, Element, Length, Color
 };
 
-//use math_lib::{self, Parser, FnTree, Function};
 #[rustfmt::skip]
 use crate::{
     events::Message,
-    graph::Graph2D,
-    plotter::Plotter2D,
+    plotter::{
+        graph::Graph2D,
+        plotter::*,
+    },
     utilities::{rnd_color},
     vector::Vec2
 };
@@ -32,8 +33,9 @@ impl Application for App {
     type Theme = iced::Theme;
 
     fn new(_flags: ()) -> (App, Command<Self::Message>) {
-        let mut plotter = Plotter2D::default();
-        plotter.add_control_points();
+        let plotter = Plotter2D::builder()
+            .add_control_points()
+            .build();
 
         let app = App {
             plotter,

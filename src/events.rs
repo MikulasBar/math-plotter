@@ -1,5 +1,3 @@
-use smol_str::SmolStr;
-
 #[rustfmt::skip]
 use iced::{
     self,
@@ -7,8 +5,12 @@ use iced::{
     mouse::{self, Button as MouseButton, Event as MouseEvent, ScrollDelta},
     widget::canvas::{Event as CanvasEvent},
 };
-use crate::vector::Vec2;
-use crate::view::View;
+
+#[rustfmt::skip]
+use crate::{
+    vector::Vec2,
+    plotter::view::View,
+};
 
 #[derive(Debug, Clone)]
 pub enum Message {

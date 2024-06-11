@@ -1,16 +1,23 @@
-use std::{borrow::BorrowMut, ops::Add, vec};
-use iced::widget::shader::wgpu::hal::TextureViewDescriptor;
+
+
 #[rustfmt::skip]
 use iced::{
     mouse,
     widget::{canvas::{Frame, Path}, Canvas},
     Color, Point
 };
+
+#[rustfmt::skip]
 use crate::{
     vector::Vec2,
     utilities,
+};
+
+#[rustfmt::skip]
+use super::{
     view::View
 };
+
 
 
 #[derive(Debug, Clone)]
