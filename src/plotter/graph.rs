@@ -55,7 +55,7 @@ impl Graph2D {
                 });
                 
                 frame.fill(&path, *color);
-            }
+            },
         }
     }
 

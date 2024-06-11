@@ -5,15 +5,31 @@ use iced::{
 
 #[derive(Debug, Clone)]
 pub struct Settings {
-    pub show_axes: bool,
+    pub axis: Color,
     pub background: Color,
 }
 
 impl Settings {
-    pub fn new(show_axes: bool, background: Color) -> Self {
+    // pub fn new() -> Self {
+    //     Self::default()
+    // }
+
+    // pub fn set_axis(mut self, axis: Color) -> Self {
+    //     self.axis = axis;
+    //     self
+    // }
+
+    // pub fn set_background(mut self, background: Color) -> Self {
+    //     self.background = background;
+    //     self
+    // }
+}
+
+impl Default for Settings {
+    fn default() -> Self {
         Self {
-            show_axes,
-            background,
+            axis: AXIS_COLOR,
+            background: BG_COLOR,
         }
     }
 }
@@ -24,11 +40,8 @@ const BG_COLOR: Color = Color::from_rgb(
     0x3F as f32 / 255.0,
 );
 
-impl Default for Settings {
-    fn default() -> Self {
-        Self {
-            show_axes: true,
-            background: BG_COLOR,
-        }
-    }
-}
+const AXIS_COLOR: Color = Color::from_rgb(
+    0xFF as f32 / 255.0,
+    0xFF as f32 / 255.0,
+    0xFF as f32 / 255.0,
+);

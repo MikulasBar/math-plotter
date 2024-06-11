@@ -8,10 +8,11 @@ use iced::{
             Cache, Frame, Geometry, Path,
             Event as CanvasEvent,
             event::Status as CanvasStatus,
+            Stroke, Style
         },
         Canvas, canvas
     },
-    Color, Length, Point, Rectangle, Renderer, Theme
+    Color, Point, Rectangle, Renderer, Theme, Size
 };
 
 // macros
@@ -19,7 +20,6 @@ use crate::event;
 
 #[rustfmt::skip]
 use crate::{
-    utilities::{self, draw_background},
     vector::*,
     events::*,
 };
@@ -29,14 +29,16 @@ use super::{
     view::View,
     graph::Graph2D,
     settings::Settings,
-    builder::Builder,
 };
 
+use builder::Builder;
+
+
 pub struct Plotter2D {
-    pub graphs: Vec<Graph2D>,
-    pub settings: Settings,
-    pub cache: Cache,
-    pub view: View,
+    graphs: Vec<Graph2D>,
+    settings: Settings,
+    cache: Cache,
+    view: View,
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -81,9 +83,43 @@ impl Plotter2D {
         frame.fill(&path, color);
     }
 
-    // fn draw_plane(&self, frame: &mut Frame) {
-    //     self.draw
-    // }
+    fn draw_axis(&self, frame: &mut Frame, origin: &Vec2) {
+        let color = self.settings.axis;
+        let Size { width, height } = frame.size();
+        let stroke = Stroke {
+            style: Style::from(color),
+            ..Default::default()
+        };
+
+        let View {
+            offset: Vec2{x: o_x, y: o_y},
+            ..
+        } = self.view;
+
+        // Draw horizontal axis
+        let start_point = Vec2::new(width - o_x, 0.0)
+            .prepare_for_drawing(*origin, &self.view);
+
+        let end_point = Vec2::new(-width - o_x, 0.0)
+            .prepare_for_drawing(*origin, &self.view);
+
+        let path = Path::line(start_point, end_point);
+
+        frame.stroke(&path, stroke.clone());
+
+
+
+        // Draw vertical axis
+        let start_point = Vec2::new(0.0, height + o_y)
+            .prepare_for_drawing(*origin, &self.view);
+
+        let end_point = Vec2::new(0.0, -height + o_y)
+            .prepare_for_drawing(*origin, &self.view);
+
+        let path = Path::line(start_point, end_point);
+
+        frame.stroke(&path, stroke);
+    }
 }
 
 impl Default for Plotter2D {
@@ -97,6 +133,7 @@ impl Default for Plotter2D {
     }
 }
 
+
 impl canvas::Program<Message> for Plotter2D {
     type State = State;
 
@@ -107,9 +144,9 @@ impl canvas::Program<Message> for Plotter2D {
             bounds: Rectangle,
             cursor: mouse::Cursor,
     ) -> (CanvasStatus, Option<Message>) {
-        if !cursor.is_over(bounds) {
-            return (CanvasStatus::Ignored, None);
-        }
+        // if !cursor.is_over(bounds) {
+        //     return (CanvasStatus::Ignored, None);
+        // }
         
         match event {
             event!(MOUSE_LEFT_DOWN) => {
@@ -162,13 +199,79 @@ impl canvas::Program<Message> for Plotter2D {
     ) -> Vec<Geometry> { 
         
         let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
-            self.draw_background(frame);      
-
-            // Draw graphs
             let origin = Vec2::new(bounds.width, bounds.height) / 2.0;
+
+            self.draw_background(frame);    
+            self.draw_axis(frame, &origin);
             self.draw_graphs(frame, &origin);
         });
 
         vec![geometry]
+    }
+}
+
+
+
+
+
+mod builder {
+
+    #[rustfmt::skip]
+    use iced::{
+        Color,
+    };
+
+    #[rustfmt::skip]
+    use crate::{
+        plotter::{
+            graph::Graph2D,
+            settings::Settings,
+            plotter::Plotter2D,
+        },
+        vector::Vec2,
+    };
+
+    pub struct Builder {
+        settings: Settings,
+        graphs: Vec<Graph2D>,
+    }
+
+    impl Default for Builder {
+        fn default() -> Self {
+            Self {
+                settings: Settings::default(),
+                graphs: Vec::new(),
+            }
+        }
+    }
+
+    impl Builder {
+        pub fn add_graphs(mut self, graphs: Vec<Graph2D>) -> Self {
+            self.graphs.extend(graphs);
+            self
+        }
+
+        pub fn add_control_points(mut self) -> Self {
+            let center = Graph2D::Point(Vec2::ZERO, Color::WHITE);
+            let right = Graph2D::Point(Vec2::UNIT_X * 100.0, Color::WHITE);
+            let up = Graph2D::Point(Vec2::UNIT_Y * 100.0, Color::WHITE);
+        
+            self.graphs.extend(vec![center, right, up]);
+
+            self
+        }
+
+        pub fn background(mut self, color: Color) -> Self {
+            self.settings.background = color;
+            self
+        }
+
+        pub fn build(self) -> Plotter2D {
+            Plotter2D {
+                settings: self.settings,
+                graphs: self.graphs,
+                ..Plotter2D::default()
+            }
+        }
     }
 }
