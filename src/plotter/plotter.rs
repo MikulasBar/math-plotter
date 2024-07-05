@@ -1,54 +1,15 @@
-use std::vec;
-
-#[rustfmt::skip]
-use iced::{
-    mouse::{self, Event as MouseEvent, Button as MouseButton},
-    widget::{
-        canvas::{
-            Cache, Frame, Geometry, Path,
-            Event as CanvasEvent,
-            event::Status as CanvasStatus,
-            Stroke, Style
-        },
-        Canvas, canvas
-    },
-    Color, Point, Rectangle, Renderer, Theme, Size
-};
-
-// macros
-use crate::event;
-
-#[rustfmt::skip]
-use crate::{
-    vector::*,
-    events::*,
-};
-    
-#[rustfmt::skip]
-use super::{
-    view::View,
-    graph::Graph2D,
-    settings::Settings,
-};
+use super::imports::*;
 
 use builder::Builder;
 
-
-pub struct Plotter2D {
-    graphs: Vec<Graph2D>,
+pub struct Plotter {
+    elements: Vec<Element>,
     settings: Settings,
     cache: Cache,
     view: View,
 }
 
-#[derive(Debug, Clone, Default, PartialEq)]
-pub enum State {
-    #[default]
-    Idle,
-    LeftButtonDown(Vec2),
-}
-
-impl Plotter2D {
+impl Plotter {
     pub fn builder() -> Builder {
         Builder::default()
     }
@@ -63,17 +24,17 @@ impl Plotter2D {
         self.view = view;
     }
 
-    // pub fn add_graphs(&mut self, graphs: Vec<Graph2D>) {
-    //     self.graphs.extend(graphs);
+    // pub fn add_elements(&mut self, elements: Vec<Element>) {
+    //     self.elements.extend(elements);
     // }
 
     pub fn clear_cache(&self) {
         self.cache.clear();
     }
 
-    fn draw_graphs(&self, frame: &mut Frame, origin: &Vec2) {
-        self.graphs.iter().for_each(|graph| {
-            graph.draw(frame, origin, &self.view);
+    fn draw_elements(&self, frame: &mut Frame, origin: &Vec2) {
+        self.elements.iter().for_each(|elem| {
+            elem.draw(frame, origin, &self.view);
         });
     }
 
@@ -122,10 +83,10 @@ impl Plotter2D {
     }
 }
 
-impl Default for Plotter2D {
+impl Default for Plotter {
     fn default() -> Self {
         Self {
-            graphs: vec![],
+            elements: vec![],
             cache: Cache::default(),
             view: View::default(),
             settings: Settings::default(),
@@ -133,15 +94,14 @@ impl Default for Plotter2D {
     }
 }
 
-
-impl canvas::Program<Message> for Plotter2D {
+impl canvas::Program<Message> for Plotter {
     type State = State;
 
     fn update(
             &self,
             state: &mut Self::State,
             event: CanvasEvent,
-            bounds: Rectangle,
+            _bounds: Rectangle,
             cursor: mouse::Cursor,
     ) -> (CanvasStatus, Option<Message>) {
         // if !cursor.is_over(bounds) {
@@ -174,10 +134,10 @@ impl canvas::Program<Message> for Plotter2D {
             },
             event!(MOUSE_SCROLL: delta) => {
                 let old_zoom = self.view.zoom;
-                let zoom = View::zoom_from_delta(delta);
+                let coef = View::zoom_coef(delta);
                 
                 let view = View {
-                    zoom: old_zoom + zoom,
+                    zoom: old_zoom * (1.0 + coef),
                     ..self.view
                 };
 
@@ -202,75 +162,79 @@ impl canvas::Program<Message> for Plotter2D {
             let origin = Vec2::new(bounds.width, bounds.height) / 2.0;
 
             self.draw_background(frame);    
-            self.draw_axis(frame, &origin);
-            self.draw_graphs(frame, &origin);
+            // self.draw_axis(frame, &origin);
+            self.draw_elements(frame, &origin);
         });
 
         vec![geometry]
     }
 }
 
-
-
+#[derive(Debug, Clone, Default, PartialEq)]
+pub enum State {
+    #[default]
+    Idle,
+    LeftButtonDown(Vec2),
+}
 
 
 mod builder {
 
-    #[rustfmt::skip]
-    use iced::{
-        Color,
-    };
+    use super::Plotter;
 
     #[rustfmt::skip]
-    use crate::{
-        plotter::{
-            graph::Graph2D,
-            settings::Settings,
-            plotter::Plotter2D,
-        },
-        vector::Vec2,
+    use super::super::imports::{
+        Settings,
+        Element,
+        Color
     };
 
     pub struct Builder {
         settings: Settings,
-        graphs: Vec<Graph2D>,
+        elements: Vec<Element>,
     }
 
     impl Default for Builder {
         fn default() -> Self {
             Self {
                 settings: Settings::default(),
-                graphs: Vec::new(),
+                elements: Vec::new(),
             }
         }
     }
 
     impl Builder {
-        pub fn add_graphs(mut self, graphs: Vec<Graph2D>) -> Self {
-            self.graphs.extend(graphs);
+        // pub fn add_elements(mut self, elements: Vec<Element>) -> Self {
+        //     self.elements.extend(elements);
+        //     self
+        // }
+
+        pub fn add_sin_test(mut self) -> Self {
+            let sin = |x: f32| x.sin();
+            self.elements.push(Element::from( (sin as fn(f32) -> f32, Color::WHITE) ));
             self
         }
 
-        pub fn add_control_points(mut self) -> Self {
-            let center = Graph2D::Point(Vec2::ZERO, Color::WHITE);
-            let right = Graph2D::Point(Vec2::UNIT_X * 100.0, Color::WHITE);
-            let up = Graph2D::Point(Vec2::UNIT_Y * 100.0, Color::WHITE);
+        // pub fn add_control_points(mut self) -> Self {
+        //     let center = Element::from( (Vec2::ZERO, Color::WHITE) );
+        //     let right = Element::from( (Vec2::UNIT_X * 100.0, Color::WHITE) );
+        //     let up = Element::from( (Vec2::UNIT_Y * 100.0, Color::WHITE) );
         
-            self.graphs.extend(vec![center, right, up]);
+        //     self.elements.extend(vec![center, right, up]);
 
-            self
-        }
+        //     self
+        // }
 
-        pub fn background(mut self, color: Color) -> Self {
-            self.settings.background = color;
-            self
-        }
+        // pub fn background(mut self, color: Color) -> Self {
+        //     self.settings.background = color;
+        //     self
+        // }
 
-        pub fn build(self) -> Plotter2D {
-            Plotter2D {
+        pub fn build(self) -> Plotter {
+            Plotter {
                 settings: self.settings,
-                graphs: self.graphs,
-                ..Plotter2D::default()
+                elements: self.elements,
+                ..Plotter::default()
             }
         }
     }

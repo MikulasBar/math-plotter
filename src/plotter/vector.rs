@@ -1,13 +1,12 @@
-use std::ops::{Add, Sub, AddAssign, SubAssign, Mul, Div};
-
+use std::ops::{Add, Sub, Mul, Div};
 use iced::{self, Point};
 
 use crate::{
     utilities::rnd_signed,
-    plotter::{
-        view::View,
-    },
+    plotter::view::View,
 };
+
+
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vec2<T = f32> {
@@ -110,18 +109,6 @@ impl Sub for Vec2 {
         }
     }
 }
-
-// impl AddAssign for Vec2 {
-//     fn add_assign(&mut self, rhs: Self) {
-//         *self = *self + rhs;
-//     }
-// }
-
-// impl SubAssign for Vec2 {
-//     fn sub_assign(&mut self, rhs: Self) {
-//         *self = *self - rhs;
-//     }
-// }
 
 
 impl Mul<f32> for Vec2 {

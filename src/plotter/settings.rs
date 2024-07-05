@@ -1,7 +1,6 @@
-#[rustfmt::skip]
-use iced::{
-    Color,
-};
+use iced::Color;
+
+
 
 #[derive(Debug, Clone)]
 pub struct Settings {

@@ -1,6 +1,6 @@
 use iced::mouse::ScrollDelta;
 
-use crate::{
+use super::{
     vector::Vec2,
 };
 
@@ -19,10 +19,10 @@ impl View {
         }
     }
 
-    pub fn zoom_from_delta(delta: ScrollDelta) -> f32 {
+    pub fn zoom_coef(delta: ScrollDelta) -> f32 {
         match delta {
             ScrollDelta::Lines { y, .. } => y * 0.1,
-            ScrollDelta::Pixels { y, .. } => y * 0.01,
+            ScrollDelta::Pixels { y, .. } => y * 1.0,
         }
     }
 }
@@ -31,7 +31,7 @@ impl Default for View {
     fn default() -> Self {
         Self {
             offset: Vec2::ZERO,
-            zoom: 1.0
+            zoom: 20.0
         }
     }
 }

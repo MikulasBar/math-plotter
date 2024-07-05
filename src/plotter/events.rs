@@ -1,21 +1,17 @@
-#[rustfmt::skip]
-use iced::{
-    self,
-    Point,
-    mouse::{self, Button as MouseButton, Event as MouseEvent, ScrollDelta},
-    widget::canvas::{Event as CanvasEvent},
-};
+// #[rustfmt::skip]
+// use iced::{
+//     self,
+//     Point,
+//     mouse::{self, Button as MouseButton, Event as MouseEvent, ScrollDelta},
+//     widget::canvas::{Event as CanvasEvent},
+// };
 
-#[rustfmt::skip]
-use crate::{
-    vector::Vec2,
-    plotter::view::View,
-};
+// #[rustfmt::skip]
+// use crate::{
+//     plotter::view::View,
+// };
 
-#[derive(Debug, Clone)]
-pub enum Message {
-    UpdateView(View)
-}
+
 
 #[macro_export]
 macro_rules! event {

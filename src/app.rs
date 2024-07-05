@@ -1,29 +1,23 @@
-use iced::widget::{Canvas};
-
 #[rustfmt::skip]
 use iced::{
     self,
-    widget::{canvas, column, container, text, text_input},
-    Alignment, Application, Command, Element, Length, Color
+    widget::{canvas, container},
+    Application, Command, Element, Length
 };
 
 #[rustfmt::skip]
 use crate::{
-    events::Message,
-    plotter::{
-        graph::Graph2D,
-        plotter::*,
-    },
-    utilities::{rnd_color},
-    vector::Vec2
+    message::Message,
+    plotter::plotter::*,
 };
+
 
 pub fn run_app() -> iced::Result {
     App::run(iced::Settings::default())
 }
 
 struct App {
-    plotter: Plotter2D,
+    plotter: Plotter,
 }
 
 impl Application for App {
@@ -33,8 +27,9 @@ impl Application for App {
     type Theme = iced::Theme;
 
     fn new(_flags: ()) -> (App, Command<Self::Message>) {
-        let plotter = Plotter2D::builder()
-            .add_control_points()
+        let plotter = Plotter::builder()
+            // .add_control_points()
+            .add_sin_test()
             .build();
 
         let app = App {
