@@ -5,6 +5,7 @@ pub mod settings;
 mod events;
 mod vector;
 
+pub use plotter::Plotter;
 
 mod imports {
     pub(super) use super::{
@@ -21,11 +22,11 @@ mod imports {
 
     pub(super) use iced::{
         Point, Rectangle, Renderer, Theme, Size, Color,
+        widget::canvas,
         widget::canvas::{
-            self,
-            Cache, Frame,Geometry, Path, Stroke, Style,
+            Cache, Frame,Geometry, Path, Stroke, Style, Canvas,
             Event as CanvasEvent,
-            event::Status as CanvasStatus
+            event::Status as CanvasStatus,
         },
         mouse::{
             self,

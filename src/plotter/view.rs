@@ -1,21 +1,21 @@
-use iced::mouse::ScrollDelta;
+use iced::{mouse::ScrollDelta, Size};
 
-use super::{
-    vector::Vec2,
-};
+use super::vector::Vec2;
 
 
 #[derive(Debug, Clone)]
 pub struct View {
     pub offset: Vec2,
     pub zoom: f32,
+    pub size: Size,
 }
 
 impl View {
-    pub fn new(offset: Vec2, zoom: f32) -> Self {
+    pub fn new(offset: Vec2, zoom: f32, size: Size) -> Self {
         Self {
             offset,
             zoom,
+            size,
         }
     }
 
@@ -31,7 +31,8 @@ impl Default for View {
     fn default() -> Self {
         Self {
             offset: Vec2::ZERO,
-            zoom: 20.0
+            zoom: 20.0,
+            size: Size::new(0.0, 0.0)
         }
     }
 }

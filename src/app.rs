@@ -8,7 +8,7 @@ use iced::{
 #[rustfmt::skip]
 use crate::{
     message::Message,
-    plotter::plotter::*,
+    plotter::Plotter,
 };
 
 
@@ -29,12 +29,14 @@ impl Application for App {
     fn new(_flags: ()) -> (App, Command<Self::Message>) {
         let plotter = Plotter::builder()
             // .add_control_points()
+            .size(700.0, 700.0)
             .add_sin_test()
             .build();
 
         let app = App {
             plotter,
         };
+
         (app, Command::none())
     }
 
@@ -57,9 +59,7 @@ impl Application for App {
     }
 
     fn view(&self) -> Element<Self::Message> {
-        let content = canvas(&self.plotter)
-            .width(Length::Fixed(700.0))
-            .height(Length::Fixed(700.0));
+        let content = self.plotter.canvas();
 
         container(content)
             .width(Length::Fill)

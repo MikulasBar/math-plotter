@@ -28,27 +28,24 @@ impl GraphElem {
         }
     }
     
-    pub fn draw(&self, origin: &Vec2, view: &View, frame: &mut Frame) {
+    pub fn draw(&self, origin: Vec2, view: &View, frame: &mut Frame) {
         let path = Path::new(|builder| {
-            const MIN_RANGE     : i32 = 100;
-            const RANGE_SCALE   : f32 = 0.1;
+            const AMOUNT: i32 = 100;
 
             let scaled_offset = view.offset.x / view.zoom;
-            let scaled_range = (MIN_RANGE as f32 * view.zoom) as i32;
-            let range = MIN_RANGE.max(scaled_range);
+            let half_x_size = view.size.width / 2.0;
+            let trans_coef = half_x_size / view.zoom / AMOUNT as f32;
             
             // create vectors on the graph, its iterator,
             // collecting all items would be slow
-            let mut points = (-range..=range)
-                .map(|x| x as f32 - scaled_offset)
+            let mut points = (-AMOUNT..=AMOUNT)
+                .map(|x| x as f32 * trans_coef - scaled_offset)
                 .map(|x| Vec2::new(x, (self.func)(x)))
-                .map(|v| v.prepare_for_drawing(*origin, view));
+                .map(|v| v.prepare_for_drawing(origin, view));
 
 
             // move to starting vector
-            let start = points.next()
-                .unwrap();
-
+            let start = points.next().unwrap();
             builder.move_to(start);
 
 
@@ -60,8 +57,10 @@ impl GraphElem {
 
         let stroke = Stroke {
             style: Style::from(self.color),
+            width: 3.0,
             ..Default::default()
         };
+        // println!("{:?}", stroke);
 
         frame.stroke(&path, stroke);
     }

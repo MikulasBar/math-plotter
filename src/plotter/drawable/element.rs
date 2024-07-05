@@ -16,7 +16,7 @@ pub enum Element {
 }
 
 impl Element {
-    pub fn draw(&self, frame: &mut Frame, origin: &Vec2, view: &View) {
+    pub fn draw(&self, frame: &mut Frame, origin: Vec2, view: &View) {
         match self {
             Self::Point(point) => {
                 point.draw(origin, view, frame);

@@ -9,9 +9,9 @@ use crate::{
 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Vec2<T = f32> {
-    pub x: T,
-    pub y: T,
+pub struct Vec2 {
+    pub x: f32,
+    pub y: f32,
 }
 
 impl Vec2 {
@@ -36,7 +36,11 @@ impl Vec2 {
     /// Translate the vector according to `view` and `origin` <br>
     /// Converts [`Vec2`] to [`Point`]
     pub fn prepare_for_drawing(&self, origin: Vec2, view: &View) -> Point {
-        let View {offset, zoom} = *view;
+        let View {
+            offset,
+            zoom,
+            ..
+        } = *view;
 
         let vector = self.flip_y() * zoom + origin + offset;
         Point::from(vector)
