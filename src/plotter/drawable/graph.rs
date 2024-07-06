@@ -32,14 +32,13 @@ impl GraphElem {
         let path = Path::new(|builder| {
             const AMOUNT: i32 = 100;
 
-            let scaled_offset = view.offset.x / view.zoom;
-            let half_x_size = view.size.width / 2.0;
-            let trans_coef = half_x_size / view.zoom / AMOUNT as f32;
+            let trans_coef = view.size.width / (2 * AMOUNT) as f32;
+            let inv_zoom = 1.0 / view.zoom;
             
             // create vectors on the graph, its iterator,
             // collecting all items would be slow
             let mut points = (-AMOUNT..=AMOUNT)
-                .map(|x| x as f32 * trans_coef - scaled_offset)
+                .map(|x| inv_zoom * (x as f32 * trans_coef - view.offset.x) )
                 .map(|x| Vec2::new(x, (self.func)(x)))
                 .map(|v| v.prepare_for_drawing(origin, view));
 

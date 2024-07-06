@@ -1,4 +1,5 @@
 use super::imports::*;
+use super::drawable::bisector;
 
 use builder::{Builder, Unsized};
 
@@ -39,9 +40,9 @@ impl Plotter {
         self.cache.clear();
     }
 
-    fn draw_elements(&self, frame: &mut Frame) {
+    fn draw_elements(&self, frame: &mut Frame, origin: Vec2) {
         self.elements.iter().for_each(|elem| {
-            elem.draw(frame, self.get_origin(), &self.view);
+            elem.draw(frame, origin, &self.view);
         });
     }
 
@@ -52,42 +53,13 @@ impl Plotter {
         frame.fill(&path, color);
     }
 
-    fn draw_axis(&self, frame: &mut Frame, origin: &Vec2) {
+    fn draw_axis(&self, frame: &mut Frame, origin: Vec2) {
         let color = self.settings.axis;
-        let Size { width, height } = frame.size();
-        let stroke = Stroke {
-            style: Style::from(color),
-            ..Default::default()
-        };
+        let stroke = Stroke::default()
+            .with_color(color);
 
-        let View {
-            offset: Vec2{x: o_x, y: o_y},
-            ..
-        } = self.view;
-
-        // Draw horizontal axis
-        let start_point = Vec2::new(width - o_x, 0.0)
-            .prepare_for_drawing(*origin, &self.view);
-
-        let end_point = Vec2::new(-width - o_x, 0.0)
-            .prepare_for_drawing(*origin, &self.view);
-
-        let path = Path::line(start_point, end_point);
-
-        frame.stroke(&path, stroke.clone());
-
-
-
-        // Draw vertical axis
-        let start_point = Vec2::new(0.0, height + o_y)
-            .prepare_for_drawing(*origin, &self.view);
-
-        let end_point = Vec2::new(0.0, -height + o_y)
-            .prepare_for_drawing(*origin, &self.view);
-
-        let path = Path::line(start_point, end_point);
-
-        frame.stroke(&path, stroke);
+        bisector::horizontal(frame, &self.view, origin, stroke.clone());
+        bisector::vertical(frame, &self.view, origin, stroke);
     }
 }
 
@@ -167,11 +139,11 @@ impl canvas::Program<Message> for Plotter {
     ) -> Vec<Geometry> { 
         
         let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
-            // let origin = Vec2::new(bounds.width, bounds.height) / 2.0;
+            let origin = Vec2::new(bounds.width, bounds.height) / 2.0;
 
             self.draw_background(frame);    
-            // self.draw_axis(frame, &origin);
-            self.draw_elements(frame);
+            self.draw_axis(frame, origin);
+            self.draw_elements(frame, origin);
 
             // println!("{:?}", bounds);
         });

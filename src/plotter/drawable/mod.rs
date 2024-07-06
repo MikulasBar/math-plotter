@@ -1,4 +1,5 @@
-pub mod element; 
+pub mod element;
+pub mod bisector;
 mod point;
 mod graph;
 
@@ -18,7 +19,7 @@ mod imports {
     };
 
     pub(super) use iced::{
-        Color,
+        Color, Size,
         widget::canvas::{Frame, Path, Stroke, Style}
     };
 }
