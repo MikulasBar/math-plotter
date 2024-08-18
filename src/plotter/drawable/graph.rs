@@ -10,9 +10,11 @@ use super::imports::{
     Element,
 };
 
+use math_lib::prelude::*;
+use maplit::hashmap;
 
 
-type Func = fn(f32) -> f32;
+pub type Func = Child;
 
 #[derive(Debug, Clone)]
 pub struct GraphElem {
@@ -27,31 +29,51 @@ impl GraphElem {
             color
         }
     }
+
+    fn eval(&self, x: f32) -> EvalResult {
+        let ctx = Context::builder()
+            .add_elementary()
+            .add_vars(hashmap!{"x" => x})
+            .build();
+
+        self.func.eval(&ctx)
+    }
     
     pub fn draw(&self, origin: Vec2, view: &View, frame: &mut Frame) {
+        // amount of points to draw
+        const AMOUNT: i32 = 100;
+
+        let trans_coef = view.size.width / (2 * AMOUNT) as f32;
+        let inv_zoom = 1.0 / view.zoom;
+
+        println!("--------------- {} ---------------", self.func.to_string());
+        
+        // create vectors on the graph, its iterator,
+        // collecting all items would be slow
+        let mut points = (-AMOUNT..=AMOUNT)
+            // make x coordinates such that all points are evenly spaced, and all are visible
+            .map(|x| inv_zoom * (x as f32 * trans_coef - view.offset.x) )
+            // make x, y coordinates, filter out invalid values
+            .filter_map(|x| {
+                if let Ok(y) = self.eval(x) {
+                    println!("x = {x}, y = {y}");
+                    Some(Vec2::new(x, y))
+                } else {
+                    println!("invalid x = {x}");
+                    None
+                }
+            })
+            // prepare for drawing
+            .map(|v| v.prepare_for_drawing(origin, view));
+
         let path = Path::new(|builder| {
-            const AMOUNT: i32 = 100;
-
-            let trans_coef = view.size.width / (2 * AMOUNT) as f32;
-            let inv_zoom = 1.0 / view.zoom;
-            
-            // create vectors on the graph, its iterator,
-            // collecting all items would be slow
-            let mut points = (-AMOUNT..=AMOUNT)
-                .map(|x| inv_zoom * (x as f32 * trans_coef - view.offset.x) )
-                .map(|x| Vec2::new(x, (self.func)(x)))
-                .map(|v| v.prepare_for_drawing(origin, view));
-
-
             // move to starting vector
             let start = points.next().unwrap();
             builder.move_to(start);
 
-
             for p in points {
                 builder.line_to(p);
             }
-            
         });
 
         let stroke = Stroke {
@@ -59,7 +81,6 @@ impl GraphElem {
             width: 3.0,
             ..Default::default()
         };
-        // println!("{:?}", stroke);
 
         frame.stroke(&path, stroke);
     }

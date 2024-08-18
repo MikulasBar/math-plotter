@@ -27,17 +27,20 @@ impl Plotter {
         self.view = view;
     }
 
+    pub fn add_element(&mut self, element: Element) {
+        self.elements.push(element);
+    }
+
     // pub fn add_elements(&mut self, elements: Vec<Element>) {
     //     self.elements.extend(elements);
     // }
 
-    fn get_origin(&self) -> Vec2 {
-        let size = self.view.size;
-        Vec2::new(size.width, size.height) / 2.0
-    }
-
     pub fn clear_cache(&self) {
         self.cache.clear();
+    }
+
+    pub fn clear_elements(&mut self) {
+        self.elements.clear();
     }
 
     fn draw_elements(&self, frame: &mut Frame, origin: Vec2) {
@@ -81,22 +84,22 @@ impl canvas::Program<Message> for Plotter {
             &self,
             state: &mut Self::State,
             event: CanvasEvent,
-            _bounds: Rectangle,
+            bounds: Rectangle,
             cursor: mouse::Cursor,
     ) -> (CanvasStatus, Option<Message>) {
-        // if !cursor.is_over(bounds) {
-        //     return (CanvasStatus::Ignored, None);
-        // }
+        if !cursor.is_over(bounds) {
+            return (CanvasStatus::Ignored, None);
+        }
         
         match event {
-            event!(MOUSE_LEFT_DOWN) => {
+            event!(MOUSE LEFT_DOWN) => {
                 let pos: Vec2 = cursor.position().unwrap().into();
                 *state = State::LeftButtonDown(pos);
             },
-            event!(MOUSE_LEFT_UP) => {
+            event!(MOUSE LEFT_UP) => {
                 *state = State::Idle;
             },
-            event!(MOUSE_MOVE: new_pos) => {
+            event!(MOUSE MOVE: new_pos) => {
                 if let State::LeftButtonDown(old_pos) = *state {
                     let old_offset = self.view.offset;
                     let offset: Vec2 = Vec2::from(new_pos) - old_pos;
@@ -112,7 +115,7 @@ impl canvas::Program<Message> for Plotter {
                     return (CanvasStatus::Captured, Some(Message::UpdateView(view)))
                 }
             },
-            event!(MOUSE_SCROLL: delta) => {
+            event!(MOUSE SCROLL: delta) => {
                 let old_zoom = self.view.zoom;
                 let coef = View::zoom_coef(delta);
                 
@@ -144,8 +147,6 @@ impl canvas::Program<Message> for Plotter {
             self.draw_background(frame);    
             self.draw_axis(frame, origin);
             self.draw_elements(frame, origin);
-
-            // println!("{:?}", bounds);
         });
 
         vec![geometry]
@@ -199,13 +200,13 @@ mod builder {
             }
         }
 
-        pub fn add_sin_test(mut self) -> Self {
-            let red_color = Color::from_rgb8(255, 0, 0);
-            let sin = (|x: f32| x.sin()) as fn(f32) -> f32;
+        // pub fn add_sin_test(mut self) -> Self {
+        //     let red_color = Color::from_rgb8(255, 0, 0);
+        //     let sin = (|x: f32| x.sin()) as fn(f32) -> f32;
 
-            self.elements.push((sin, red_color).into());
-            self
-        }
+        //     self.elements.push((sin, red_color).into());
+        //     self
+        // }
 
         pub fn size(self, width: f32, height: f32) -> Builder<Sized> {
             let Builder { mut view, ..} = self;

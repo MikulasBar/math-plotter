@@ -31,10 +31,13 @@ impl Vec2 {
         *self = *self * factor;
     }
 
-    /// Prepare the vector for drawing on the canvas <br>
-    /// Flips the Y coordinate so the Y increases upwards <br>
-    /// Translate the vector according to `view` and `origin` <br>
-    /// Converts [`Vec2`] to [`Point`]
+    /// Prepare the vector for drawing on the canvas.
+    /// 
+    /// Flips the Y coordinate so the Y increases upwards.
+    /// 
+    /// Translate the vector according to `view` and `origin`.
+    /// 
+    /// Converts [`Vec2`] to [`Point`].
     pub fn prepare_for_drawing(&self, origin: Vec2, view: &View) -> Point {
         let View {
             offset,
@@ -46,8 +49,9 @@ impl Vec2 {
         Point::from(vector)
     }
 
-    /// Flips the x coordinate of the vector <br>
-    /// Doesnt effect the `self` vector but returns a new vector
+    /// Flips the x coordinate of the vector.
+    /// 
+    /// Doesnt effect the `self` vector but returns a new vector.
     pub fn flip_x(&self) -> Self {
         Self {
             x: -self.x,
@@ -55,8 +59,8 @@ impl Vec2 {
         }
     }
 
-    /// Flips the y coordinate of the vector <br>
-    /// Doesnt effect the `self` vector but returns a new vector
+    /// Flips the y coordinate of the vector.
+    /// Doesnt effect the `self` vector but returns a new vector.
     pub fn flip_y(&self) -> Self {
         Self {
             x: self.x,

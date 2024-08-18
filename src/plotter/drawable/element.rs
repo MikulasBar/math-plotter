@@ -27,6 +27,10 @@ impl Element {
         }
     }
 
+    pub fn graph(func: super::graph::Func, color: Color) -> Self{
+        GraphElem::new(func, color).into()
+    }
+
     // pub fn random_points<C>(num: u32, factor: f32, color_fn: C) -> Vec<Self>
     // where 
     //     C: Fn() -> Color,
@@ -48,8 +52,8 @@ impl From<(Vec2, Color)> for Element {
     }
 }
 
-impl From<(fn(f32) -> f32, Color)> for Element {
-    fn from(value: (fn(f32) -> f32, Color)) -> Self {
-        GraphElem::new(value.0, value.1).into()
-    }
-}
+// impl From<(fn(f32) -> f32, Color)> for Element {
+//     fn from(value: (fn(f32) -> f32, Color)) -> Self {
+//         GraphElem::new(value.0, value.1).into()
+//     }
+// }

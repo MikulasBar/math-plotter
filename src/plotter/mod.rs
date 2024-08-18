@@ -18,6 +18,7 @@ mod imports {
     pub(super) use crate::{
         message::Message,
         event,
+        mouse_event
     };
 
     pub(super) use iced::{
