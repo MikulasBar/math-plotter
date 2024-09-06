@@ -38,12 +38,12 @@ impl Vec2 {
     /// Translate the vector according to `view` and `origin`.
     /// 
     /// Converts [`Vec2`] to [`Point`].
-    pub fn prepare_for_drawing(&self, origin: Vec2, view: &View) -> Point {
+    pub fn prepare_for_drawing(&self, origin: Vec2, view: View) -> Point {
         let View {
             offset,
             zoom,
             ..
-        } = *view;
+        } = view;
 
         let vector = self.flip_y() * zoom + origin + offset;
         Point::from(vector)
@@ -75,68 +75,85 @@ impl Vec2 {
     }
 }
 
-impl From<Vec2> for Point {
-    fn from(vector: Vec2) -> Self {
-        Point::new(vector.x, vector.y)
-    }
-}
+mod froms {
+    use super::*;
 
-impl From<&Vec2> for Point {
-    fn from(vector: &Vec2) -> Self {
-        Point::new(vector.x, vector.y)
-    }
-}
-
-impl From<Point> for Vec2 {
-    fn from(point: Point) -> Self {
-        Self {
-            x: point.x,
-            y: point.y,
+    impl From<Vec2> for Point {
+        fn from(vector: Vec2) -> Self {
+            Point::new(vector.x, vector.y)
         }
     }
-} 
-
-impl Add for Vec2 {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
+    
+    impl From<&Vec2> for Point {
+        fn from(vector: &Vec2) -> Self {
+            Point::new(vector.x, vector.y)
         }
     }
-}
+    
+    impl From<Point> for Vec2 {
+        fn from(point: Point) -> Self {
+            Self {
+                x: point.x,
+                y: point.y,
+            }
+        }
+    }
 
-impl Sub for Vec2 {
-    type Output = Self;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        Self {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
+    impl From<(f32, f32)> for Vec2 {
+        fn from(value: (f32, f32)) -> Self {
+            Self {
+                x: value.0,
+                y: value.1,
+            }
         }
     }
 }
 
+mod ops {
+    use super::*;
 
-impl Mul<f32> for Vec2 {
-    type Output = Self;
+    impl Add for Vec2 {
+        type Output = Self;
 
-    fn mul(self, rhs: f32) -> Self {
-        Self {
-            x: self.x * rhs,
-            y: self.y * rhs,
+        fn add(self, rhs: Self) -> Self {
+            Self {
+                x: self.x + rhs.x,
+                y: self.y + rhs.y,
+            }
         }
     }
-}
 
-impl Div<f32> for Vec2 {
-    type Output = Self;
+    impl Sub for Vec2 {
+        type Output = Self;
 
-    fn div(self, rhs: f32) -> Self::Output {
-        Self {
-            x: self.x / rhs,
-            y: self.y / rhs,
+        fn sub(self, rhs: Self) -> Self::Output {
+            Self {
+                x: self.x - rhs.x,
+                y: self.y - rhs.y,
+            }
+        }
+    }
+
+
+    impl Mul<f32> for Vec2 {
+        type Output = Self;
+
+        fn mul(self, rhs: f32) -> Self {
+            Self {
+                x: self.x * rhs,
+                y: self.y * rhs,
+            }
+        }
+    }
+
+    impl Div<f32> for Vec2 {
+        type Output = Self;
+
+        fn div(self, rhs: f32) -> Self::Output {
+            Self {
+                x: self.x / rhs,
+                y: self.y / rhs,
+            }
         }
     }
 }

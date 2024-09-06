@@ -23,7 +23,7 @@ impl PointElem {
         }
     }
 
-    pub fn draw(&self, origin: Vec2, view: &View, frame: &mut Frame) {
+    pub fn draw(&self, origin: Vec2, view: View, frame: &mut Frame) {
         let point = self.pos.prepare_for_drawing(origin, view);
         let circle = Path::circle(point, 5.0);
 

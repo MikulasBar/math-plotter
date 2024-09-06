@@ -2,8 +2,8 @@ use iced::widget::Space;
 #[rustfmt::skip]
 use iced::{
     self,
-    widget::{container, text_input, text, column as iced_column, TextInput},
-    Application, Command, Length, Color
+    widget::{self, container, text_input, text},
+    Application, Command, Length, Alignment, 
 };
 use math_lib::prelude::parse;
 
@@ -11,13 +11,13 @@ use math_lib::prelude::parse;
 use crate::{
     message::Message,
     plotter::{Plotter, drawable::element::Element as Element},
-
+    color,
 };
 
 
 
 
-pub fn run_app() -> iced::Result {
+pub fn run_default() -> iced::Result {
     App::run(iced::Settings::default())
 }
 
@@ -59,8 +59,8 @@ impl Application for App {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Message::UpdateView(view) => {
-                self.plotter.clear_cache();
                 self.plotter.update_view(view);
+                self.plotter.clear_cache();
             },
             Message::InputChanged(input) => {
                 self.input = input;
@@ -78,15 +78,11 @@ impl Application for App {
                 
                 let function = parse_result.unwrap();
 
-                // use math_lib::prelude::{Child, Function};
-
-                // let function = Child::Fn(Box::new(Function::Sin(Child::Var("x".to_string()))));
-
                 println!("Parsed function: {:?}", function);
-
+                
                 self.plotter.clear_elements();
                 self.plotter.add_element(
-                    Element::graph(function, Color::from_rgb8(255, 0, 0))
+                    Element::graph(function, color::RED)
                 );
                 self.plotter.clear_cache();
             },
@@ -95,9 +91,9 @@ impl Application for App {
     }
 
     fn view(&self) -> iced::Element<Self::Message> {
-        let plotter = self.plotter.canvas();
+        let plotter = self.plotter.get_canvas();
 
-        let content = iced_column!(
+        let content = widget::column!(
             plotter,
 
             text_input("Enter a function", &self.input)
@@ -110,7 +106,7 @@ impl Application for App {
                 .size(20)
                 .width(Length::Fixed(300.0)),
         )
-        .align_items(iced::Alignment::Center);
+        .align_items(Alignment::Center);
 
         container(content)
             .width(Length::Fill)

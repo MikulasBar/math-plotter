@@ -3,7 +3,7 @@ use iced::{mouse::ScrollDelta, Size};
 use super::vector::Vec2;
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct View {
     pub offset: Vec2,
     pub zoom: f32,

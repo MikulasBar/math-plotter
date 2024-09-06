@@ -15,8 +15,8 @@ impl Plotter {
         Builder::<Unsized>::new()
     }
 
-    pub fn canvas(&self) -> Canvas<&Self, Message> {
-        let size = self.view.size;
+    pub fn get_canvas(&self) -> Canvas<&Self, Message> {
+        let size = &self.view.size;
 
         canvas(self)
             .width(size.width)
@@ -31,10 +31,6 @@ impl Plotter {
         self.elements.push(element);
     }
 
-    // pub fn add_elements(&mut self, elements: Vec<Element>) {
-    //     self.elements.extend(elements);
-    // }
-
     pub fn clear_cache(&self) {
         self.cache.clear();
     }
@@ -45,7 +41,7 @@ impl Plotter {
 
     fn draw_elements(&self, frame: &mut Frame, origin: Vec2) {
         self.elements.iter().for_each(|elem| {
-            elem.draw(frame, origin, &self.view);
+            elem.draw(frame, origin, self.view);
         });
     }
 
@@ -140,7 +136,6 @@ impl canvas::Program<Message> for Plotter {
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<Geometry> { 
-        
         let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
             let origin = Vec2::new(bounds.width, bounds.height) / 2.0;
 

@@ -16,7 +16,7 @@ pub enum Element {
 }
 
 impl Element {
-    pub fn draw(&self, frame: &mut Frame, origin: Vec2, view: &View) {
+    pub fn draw(&self, frame: &mut Frame, origin: Vec2, view: View) {
         match self {
             Self::Point(point) => {
                 point.draw(origin, view, frame);
@@ -27,7 +27,7 @@ impl Element {
         }
     }
 
-    pub fn graph(func: super::graph::Func, color: Color) -> Self{
+    pub fn graph(func: super::graph::Func, color: Color) -> Self {
         GraphElem::new(func, color).into()
     }
 
@@ -37,6 +37,10 @@ impl Element {
     // {
     //     PointElem::random_points(num, factor, color_fn)
     // }
+
+    pub fn point(into_vec: impl Into<Vec2>, color: Color) -> Self {
+        PointElem::new(into_vec.into(), color).into()
+    }
 }
 
 impl Default for Element {

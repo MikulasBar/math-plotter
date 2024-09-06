@@ -10,7 +10,7 @@ use super::imports::{
     Element,
 };
 
-use math_lib::prelude::*;
+use math_lib::{prelude::*, functions::advanced::log};
 use maplit::hashmap;
 
 
@@ -34,41 +34,28 @@ impl GraphElem {
         let ctx = Context::builder()
             .add_elementary()
             .add_vars(hashmap!{"x" => x})
+            // .add_funcs(hashmap! {
+            //     "log" => (vec!["a"], log::new(10.0, "a"))
+            // })
             .build();
 
         self.func.eval(&ctx)
     }
-    
-    pub fn draw(&self, origin: Vec2, view: &View, frame: &mut Frame) {
-        // amount of points to draw
-        const AMOUNT: i32 = 100;
-
-        let trans_coef = view.size.width / (2 * AMOUNT) as f32;
-        let inv_zoom = 1.0 / view.zoom;
-
-        println!("--------------- {} ---------------", self.func.to_string());
         
-        // create vectors on the graph, its iterator,
-        // collecting all items would be slow
-        let mut points = (-AMOUNT..=AMOUNT)
-            // make x coordinates such that all points are evenly spaced, and all are visible
-            .map(|x| inv_zoom * (x as f32 * trans_coef - view.offset.x) )
-            // make x, y coordinates, filter out invalid values
-            .filter_map(|x| {
-                if let Ok(y) = self.eval(x) {
-                    println!("x = {x}, y = {y}");
-                    Some(Vec2::new(x, y))
-                } else {
-                    println!("invalid x = {x}");
-                    None
-                }
-            })
-            // prepare for drawing
+    pub fn draw(&self, origin: Vec2, view: View, frame: &mut Frame) {
+        // println!("--------------- {} ---------------", self.func.to_string());
+
+        const AMOUNT: u16 = 5000;
+        
+        let mut points = nums_in_view(AMOUNT, view)
+            .map(|x| (x, self.eval(x)))
+            .filter_map(|(x, res)| validate(x, res))
             .map(|v| v.prepare_for_drawing(origin, view));
+
 
         let path = Path::new(|builder| {
             // move to starting vector
-            let start = points.next().unwrap();
+            let Some(start) = points.next() else {println!("no point is valid"); return};
             builder.move_to(start);
 
             for p in points {
@@ -86,9 +73,28 @@ impl GraphElem {
     }
 }
 
+mod froms {
+    use super::*;
 
-impl Into<Element> for GraphElem {
-    fn into(self) -> Element {
-        Element::Graph(self)
+    impl From<GraphElem> for Element {
+        fn from(graph: GraphElem) -> Self {
+            Element::Graph(graph)
+        }
     }
+}
+
+
+
+fn nums_in_view(amount: u16, view: View) -> impl Iterator<Item = f32> {
+    let start = - (2.0 * view.offset.x + view.size.width) / (2.0 * view.zoom);
+    let gap = view.size.width / (view.zoom * amount as f32);
+
+    (0..amount)
+        .map(move |n| {
+            start + gap * (n as f32)
+        })
+}
+
+fn validate(x: f32, res: EvalResult) -> Option<Vec2> {
+    res.ok().map(|y| Vec2::new(x, y))
 }

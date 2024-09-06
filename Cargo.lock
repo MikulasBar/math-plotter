@@ -1455,7 +1455,7 @@ checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 [[package]]
 name = "math-lib"
 version = "0.1.0"
-source = "git+https://github.com/MikulasBar/math-lib.git?branch=feat/fnBehaviour-to-enum#f5758c60522305fbc59fe499444701b3a86881af"
+source = "git+https://github.com/MikulasBar/math-lib.git?branch=feat/fnBehaviour-to-enum#d4f30474b8d71a58a0b6ba95479b90bb7ee5f126"
 dependencies = [
  "antlr-rust",
  "derive_more",
