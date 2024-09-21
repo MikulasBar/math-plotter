@@ -1,9 +1,10 @@
+use iced::Transformation;
 
-use crate::plotter::view::View;
+
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    UpdateView(View),
+    Transform_View(Transformation),
     InputChanged(String),
     InputSubmitted,
 }
