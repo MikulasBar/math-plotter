@@ -1,5 +1,3 @@
-use iced::keyboard::Key;
-
 
 #[derive(Debug, Clone)]
 pub enum Message {

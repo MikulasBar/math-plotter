@@ -1,26 +1,28 @@
 use super::element::Element;
 use super::events::*;
-use super::imports::Message;
+use crate::message::Message;
 use crate::utilities::GlamVec2Ext;
 use super::primitive::Primitive;
 use glam::Vec2;
-use std::sync::{Arc, Mutex};
-use iced::advanced::graphics::core::event;
 use iced::widget::shader::{self, Event as ShaderEvent};
 use iced::{advanced, mouse};
 use iced::event::Status as EventStatus;
 
 
 pub struct Scene {
-    elements: Arc<Mutex<Vec<Element>>>,
+    elements: Vec<Element>,
     pub offset: Vec2,
     pub zoom: f32,
+}
+
+impl Scene {
+    const RANGE: i32 = 100;
 }
 
 impl Default for Scene {
     fn default() -> Self {
         Scene {
-            elements: Arc::new(Mutex::new(Vec::new())),
+            elements: Vec::new(),
             offset: Vec2::ZERO,
             zoom: 1.0,
         }
@@ -33,11 +35,31 @@ impl shader::Program<Message> for Scene {
 
     fn draw(
         &self,
-        state: &Self::State,
-        cursor: mouse::Cursor,
+        _state: &Self::State,
+        _cursor: mouse::Cursor,
         bounds: iced::Rectangle,
     ) -> Self::Primitive {
-        Primitive::new(self.elements.clone(), self.offset, self.zoom)
+        let range = Self::RANGE as f32;
+        // Compute coords
+        let glam::Vec2 {
+            x: ox,
+            y: oy
+        } = self.offset;
+
+        let ox = 2.0 * ox / bounds.width as f32;
+        let oy = 2.0 * oy / bounds.height as f32;
+
+        let buffer: Vec<f32> = (-Self::RANGE..Self::RANGE)
+            .map(|x| x as f32)
+            .map(|x| x / range)
+            .flat_map(|x| {
+                let f_x = (x - ox).sin(); 
+                let y = f_x - oy;
+                [x, y]
+            })
+            .collect();
+
+        Primitive::new(buffer)
     }
 
     fn update(

@@ -1,16 +1,13 @@
-use iced::{advanced::Clipboard, widget::{rule, Space}};
-#[rustfmt::skip]
 use iced::{
     self,
-    widget::{self, container, text_input, text},
-    Application, Command, Length, Alignment, 
+    widget::container,
+    Application, Command, Length,
 };
 
 #[rustfmt::skip]
 use crate::{
     message::Message,
-    plotter::{Plotter},
-    color,
+    plotter::Plotter,
 };
 
 
@@ -22,8 +19,6 @@ pub fn run_default() -> iced::Result {
 
 struct App {
     plotter: Plotter,
-    input: String,
-    status: String,
 }
 
 impl Application for App {
@@ -37,8 +32,6 @@ impl Application for App {
 
         let app = App {
             plotter,
-            input: "".to_string(),
-            status: "".to_string(),
         };
 
         (app, Command::none())
@@ -76,7 +69,6 @@ impl Application for App {
         .width(Length::Fill)
         .center_x()
         .center_y()
-        .into()
-            
+        .into() 
     }
 }

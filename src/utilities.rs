@@ -1,8 +1,5 @@
 use rand::random;
 
-// #[rustfmt::skip]
-// use iced::Color;
-
 /// returns a random f32 between -1.0 and 1.0
 pub fn rnd_signed() -> f32 {
     let sign = if random::<bool>() { 1.0 } else { -1.0 };

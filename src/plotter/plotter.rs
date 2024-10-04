@@ -1,20 +1,8 @@
-use super::imports::*;
+use crate::message::Message;
 use super::scene::Scene;
-use iced::widget::{shader, Shader, shader::Program};
+use iced::widget::{shader, Shader};
 
-use builder::{Builder, Unsized};
-
-const BG_COLOR: Color = Color::from_rgb(
-    0x36 as f32 / 255.0,
-    0x39 as f32 / 255.0,
-    0x3F as f32 / 255.0,
-);
-
-const AXIS_COLOR: Color = Color::from_rgb(
-    0xFF as f32 / 255.0,
-    0xFF as f32 / 255.0,
-    0xFF as f32 / 255.0,
-);
+// use builder::{Builder, Unsized};
 
 pub struct Plotter {
     scene: Scene
@@ -32,20 +20,16 @@ impl Plotter {
 }
 
 
-
+#[allow(dead_code)]
 mod builder {
 
     use std::marker::PhantomData;
 
-    use super::{Plotter};
-
-    #[rustfmt::skip]
-    use super::super::imports::{
-        Color,
-        Size,
-    };
-
+    
+    use super::Plotter;
+    
     pub struct Unsized;
+
     pub struct Sized;
 
     pub struct Builder<S> {
