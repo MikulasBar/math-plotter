@@ -1,4 +1,4 @@
-use iced::widget::{rule, Space};
+use iced::{advanced::Clipboard, widget::{rule, Space}};
 #[rustfmt::skip]
 use iced::{
     self,
@@ -54,28 +54,29 @@ impl Application for App {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
-            Message::Transform_View(matrix) => {
-                // self.plotter.update_view(view);
-                // self.plotter.clear_cache();
+            Message::KeyPressed(key) => {
+                // self.plotter.update_view(glam::Vec2 { x: 0.0, y: 1.0 });
+                println!("Key pressed: {:?}", key);
             },
-            Message::InputChanged(input) => {
-                self.input = input;
-            },
-            Message::InputSubmitted => {
-                
-            },
+
+            Message::UpdateView(offset) => {
+                self.plotter.update_view(offset);
+            }
         }
         Command::none()
     }
 
     fn view(&self) -> iced::Element<Self::Message> {
-        let content = self.plotter.get_widget();
-
-        container(content)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .center_x()
-            .center_y()
-            .into()
+        container(
+            self.plotter.get_widget()
+                .height(500)
+                .width(500)
+        )
+        .height(Length::Fill)
+        .width(Length::Fill)
+        .center_x()
+        .center_y()
+        .into()
+            
     }
 }

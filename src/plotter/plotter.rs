@@ -1,8 +1,8 @@
 use super::imports::*;
 use super::scene::Scene;
-use builder::{Builder, Unsized};
 use iced::widget::{shader, Shader, shader::Program};
 
+use builder::{Builder, Unsized};
 
 const BG_COLOR: Color = Color::from_rgb(
     0x36 as f32 / 255.0,
@@ -22,20 +22,15 @@ pub struct Plotter {
 
 
 impl Plotter {
-    pub fn get_widget<M>(&self) -> Shader<M, &Scene> {
-        Shader::new(&self.scene)
+    pub fn get_widget(&self) -> Shader<Message, &Scene> {
+        shader(&self.scene)
+    }
+
+    pub fn update_view(&mut self, offset: glam::Vec2) {
+        self.scene.offset += offset;
     }
 }
 
-
-
-
-#[derive(Debug, Clone, Default, PartialEq)]
-pub enum State {
-    #[default]
-    Idle,
-    LeftButtonDown(Vector),
-}
 
 
 mod builder {

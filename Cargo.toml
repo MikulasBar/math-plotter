@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.5"
-iced = { version = "0.12.1", features = ["debug"] }
+iced = { version = "0.12.1", features = ["debug", "advanced"] }
 # math-lib = { git = "https://github.com/MikulasBar/math-lib.git", branch = "feat/fnBehaviour-to-enum" }
 glam = "0.29.0"
 bytemuck = "1.18.0"

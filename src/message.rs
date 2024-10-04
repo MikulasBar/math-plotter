@@ -1,10 +1,8 @@
-use iced::Transformation;
-
+use iced::keyboard::Key;
 
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    Transform_View(Transformation),
-    InputChanged(String),
-    InputSubmitted,
+    KeyPressed(iced::keyboard::Key),
+    UpdateView(glam::Vec2)
 }
