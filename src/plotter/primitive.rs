@@ -18,13 +18,12 @@ impl Primitive {
 impl shader::Primitive for Primitive {
     fn prepare(
         &self,
-        _format: shader::wgpu::TextureFormat,
         device: &shader::wgpu::Device,
         _queue: &shader::wgpu::Queue,
-        _bounds: iced::Rectangle,
-        _target_size: iced::Size<u32>,
-        _scale_factor: f32,
+        _format: shader::wgpu::TextureFormat,
         storage: &mut shader::Storage,
+        _bounds: &iced::Rectangle,
+        viewport: &iced::advanced::graphics::Viewport,
     ) {
         if !storage.has::<RenderState>() {
             let render_state = RenderState::new(device);
@@ -37,18 +36,17 @@ impl shader::Primitive for Primitive {
 
     fn render(
         &self,
+        encoder: &mut shader::wgpu::CommandEncoder,
         storage: &shader::Storage,
         target: &shader::wgpu::TextureView,
-        _target_size: iced::Size<u32>,
-        viewport: iced::Rectangle<u32>,
-        encoder: &mut shader::wgpu::CommandEncoder,
+        viewport: &iced::Rectangle<u32>,
     ) {
         let render_state = storage.get::<RenderState>().unwrap();
 
         render_state.render(
             encoder,
             target,
-            viewport,
+            *viewport,
             0..0,
             // 0..2 * (Self::RANGE as u32),
         );

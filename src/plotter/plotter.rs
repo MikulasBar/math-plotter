@@ -8,6 +8,12 @@ pub struct Plotter {
     scene: Scene
 }
 
+impl Plotter {
+    pub fn new() -> Plotter {
+        Plotter::default()
+    }
+}
+
 
 impl Plotter {
     pub fn get_widget(&self) -> Shader<Message, &Scene> {
