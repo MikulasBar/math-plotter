@@ -1,5 +1,12 @@
+mod primitive;
+mod events;
+mod scene;
+mod element;
+mod render_state;
+
+
 use crate::message::Message;
-use super::scene::Scene;
+use scene::Scene;
 use iced::widget::{shader, Shader};
 
 // use builder::{Builder, Unsized};
