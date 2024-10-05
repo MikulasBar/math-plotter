@@ -71,11 +71,7 @@ pub fn single_entry_bind_group<T>(
         layout: &layout,
         entries: &[wgpu::BindGroupEntry {
             binding,
-            resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
-                buffer: &buffer,
-                offset: 0,
-                size: None,
-            }),
+            resource: buffer.as_entire_binding(),
         }],
     });
 

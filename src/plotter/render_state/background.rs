@@ -10,7 +10,8 @@ pub struct State {
 impl State {
     const DEFAULT_COLOR:    [u8; 4] = [0x36, 0x39, 0x3F, 0xFF];
     const BLUE:             [u8; 4] = [0x00, 0x00, 0xFF, 0xFF];
-    const CORNERS: [f32; 8] = [
+    const BLACK:            [u8; 4] = [0x00, 0x00, 0x00, 0xFF];
+    const POINTS: [f32; 8] = [
         -1.0, -1.0,
         -1.0, 1.0,
         1.0, -1.0,
@@ -24,7 +25,7 @@ impl State {
             include_str!("shaders/background.wgsl")
         );
 
-        let color = Self::BLUE.into_iter().map(f32::from).collect::<Vec<f32>>();
+        let color = color_to_f32(Self::BLUE);
         let (color_bind, color_bind_layout) = single_entry_bind_group(
             device,
             "background-color-bind-group",
@@ -36,7 +37,7 @@ impl State {
             device, 
             "background-buffer", 
             BufferUsages::VERTEX, 
-            &Self::CORNERS
+            &Self::POINTS
         );
 
         let pipeline = PipelineBuilder::new(device)
@@ -76,5 +77,23 @@ impl State {
             viewport.height
         );
         render_pass.draw(0..4, 0..1);
+    }
+}
+
+
+fn color_to_f32(color: [u8; 4]) -> [f32; 4] {
+    [
+        srgb_to_linear(color[0] as f32 / 255.0),
+        srgb_to_linear(color[1] as f32 / 255.0),
+        srgb_to_linear(color[2] as f32 / 255.0),
+        color[3] as f32 / 255.0,
+    ]
+}
+
+fn srgb_to_linear(c: f32) -> f32 {
+    if c <= 0.04045 {
+        c / 12.92
+    } else {
+        ((c + 0.055) / 1.055).powf(2.4)
     }
 }
