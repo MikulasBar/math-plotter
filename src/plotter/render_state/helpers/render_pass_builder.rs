@@ -1,5 +1,6 @@
-use iced::widget::shader::wgpu::{self, LoadOp, Color, CommandEncoder, Operations, RenderPass, RenderPassTimestampWrites, StoreOp};
-
+use iced::widget::shader::wgpu::{
+    self, Color, CommandEncoder, LoadOp, Operations, RenderPass, RenderPassTimestampWrites, StoreOp,
+};
 
 #[derive(Default)]
 pub struct RenderPassBuilder<'a> {
@@ -32,21 +33,18 @@ impl<'a> RenderPassBuilder<'a> {
         self.color_attachment = Some(wgpu::RenderPassColorAttachment {
             view,
             resolve_target: None,
-            ops: Operations {
-                load,
-                store,
-            },
+            ops: Operations { load, store },
         });
         self
     }
 
     pub fn build(self, encoder: &'a mut CommandEncoder) -> RenderPass<'a> {
         encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-            label:                      self.label,
-            color_attachments:          &[self.color_attachment],
-            depth_stencil_attachment:   self.depth_stencil_attachment,
-            timestamp_writes:           self.timestamp_writes,
-            occlusion_query_set:        self.occlusion_query_set,
+            label: self.label,
+            color_attachments: &[self.color_attachment],
+            depth_stencil_attachment: self.depth_stencil_attachment,
+            timestamp_writes: self.timestamp_writes,
+            occlusion_query_set: self.occlusion_query_set,
         })
     }
 }

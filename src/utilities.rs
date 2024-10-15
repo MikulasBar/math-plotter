@@ -6,15 +6,6 @@ pub fn rnd_signed() -> f32 {
     sign * random::<f32>()
 }
 
-// pub fn rnd_color() -> Color {
-//     Color {
-//         r: random::<f32>(),
-//         g: random::<f32>(),
-//         b: random::<f32>(),
-//         a: 1.0,
-//     }
-// }
-
 pub trait GlamVec2Ext {
     fn to_point(&self) -> iced::Point;
     fn to_iced_vec(&self) -> iced::Vector;
