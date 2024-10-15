@@ -7,6 +7,7 @@ use glam::Vec2;
 use iced::widget::shader::{self, Event as ShaderEvent};
 use iced::{advanced, mouse};
 use iced::event::Status as EventStatus;
+use iced::mouse::ScrollDelta;
 
 
 pub struct Scene {
@@ -40,21 +41,16 @@ impl shader::Program<Message> for Scene {
         bounds: iced::Rectangle,
     ) -> Self::Primitive {
         let range = Self::RANGE as f32;
-        // Compute coords
-        let glam::Vec2 {
-            x: ox,
-            y: oy
-        } = self.offset;
 
-        let ox = 2.0 * ox / bounds.width as f32;
-        let oy = 2.0 * oy / bounds.height as f32;
+        let off_x = 2.0 * self.offset.x / bounds.width as f32;
+        let off_y = 2.0 * self.offset.y / bounds.height as f32;
 
         let buffer: Vec<f32> = (-Self::RANGE..Self::RANGE)
             .map(|x| x as f32)
             .map(|x| x / range)
             .flat_map(|x| {
-                let f_x = (x - ox).sin(); 
-                let y = f_x - oy;
+                let fx = (x - off_x).sin(); 
+                let y = fx - off_y;
                 [x, y]
             })
             .collect();
@@ -70,9 +66,10 @@ impl shader::Program<Message> for Scene {
         cursor: mouse::Cursor,
         _shell: &mut advanced::Shell<'_, Message>,
     ) -> (EventStatus, Option<Message>) {
-        if !cursor.is_over(bounds) {
-            return (EventStatus::Ignored, None);
-        }
+        // if !cursor.is_over(bounds) {
+        //     // *state = State::Idle;
+        //     return (EventStatus::Captured, None);
+        // }
 
         match event {
             event!(KB PRESS: key) => {
@@ -80,6 +77,10 @@ impl shader::Program<Message> for Scene {
             },
 
             event!(MOUSE LEFT_DOWN) => {
+                if !cursor.is_over(bounds) {
+                    return (EventStatus::Ignored, None);
+                }
+                
                 let vector = Vec2::from_point(cursor.position().unwrap());
                 *state = State::LeftButtonDown(vector);
             },
@@ -93,22 +94,25 @@ impl shader::Program<Message> for Scene {
                     State::LeftButtonDown(start) => {
                         let new_pos = Vec2::from_point(new_pos);
                         let offset = new_pos - *start;
-
-                        // println!("Offset: {:?}", offset);
-                        // println!("NewPos: {:?}", new_pos);
+                        let new_offset = self.offset + offset;
 
                         // update the cursor position
                         *state = State::LeftButtonDown(new_pos);
+                        
 
-                        return (EventStatus::Captured, Some(Message::UpdateView(offset)));
+                        return (EventStatus::Captured, Some(Message::UpdateView(new_offset, self.zoom)));
                     },
                     _ => return (EventStatus::Ignored, None),
                 }
             },
 
+            event!(MOUSE SCROLL: delta) => {
+                let zoom = self.zoom + delta_to_zoom(delta);
+                return (EventStatus::Captured, Some(Message::UpdateView(self.offset, zoom)));
+            },
+
             _ => return (EventStatus::Ignored, None),
         }
-
 
         (EventStatus::Ignored, None)
     }
@@ -122,5 +126,13 @@ pub enum State {
 impl Default for State {
     fn default() -> Self {
         State::Idle
+    }
+}
+
+
+fn delta_to_zoom(delta: ScrollDelta) -> f32 {
+    match delta {
+        ScrollDelta::Lines { y, .. } => y,
+        ScrollDelta::Pixels { y, .. } => y,
     }
 }

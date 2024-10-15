@@ -1,6 +1,6 @@
 mod graph;
 mod background;
-mod builders;
+mod helpers;
 
 use iced::widget::shader::wgpu::{self};
 
@@ -11,9 +11,9 @@ pub struct RenderState {
 
 
 impl RenderState {
-    pub fn new(device: &wgpu::Device) -> Self {
+    pub fn new(device: &wgpu::Device, buffer: &[f32]) -> Self {
         let background = background::State::new(device);
-        let graph = graph::State::new(device, &[]);
+        let graph = graph::State::new(device, buffer);
 
         Self {
             background,

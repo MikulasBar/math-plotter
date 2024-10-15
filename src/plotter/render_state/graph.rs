@@ -1,5 +1,5 @@
 use iced::widget::shader::wgpu::{self, BufferUsages, LoadOp, StoreOp};
-use super::builders::*;
+use super::helpers::*;
 
 pub struct State {
     pipeline: wgpu::RenderPipeline,
@@ -9,12 +9,12 @@ pub struct State {
 
 impl State {
     pub fn new(device: &wgpu::Device, vertices: &[f32]) -> Self {
-        let shader_module = shader_module(device, "graph-shader-module", include_str!("shaders/graph.wgsl"));
-        let buffer = buffer_init(device, "graph-buffer", BufferUsages::VERTEX, vertices);
+        let shader_module = shader_module(device, "graph:shader_module", include_str!("shaders/graph.wgsl"));
+        let buffer = buffer_init(device, "graph:buffer", BufferUsages::VERTEX, vertices);
 
         let pipeline = PipelineBuilder::new(device)
-            .label("graph-pipeline")
-            .layout("graph-pipeline-layout", &[])
+            .label("graph:pipeline")
+            .layout("graph:pipeline_layout", &[])
             .vertex(&shader_module, "vs_main", &[VERTEX2D_VERTEX_LAYOUT])
             .fragment(&shader_module, "fs_main", &[Some(STANDARD_COLOR_TARGET_STATE)])
             .primitive(wgpu::PrimitiveTopology::LineStrip)
@@ -35,7 +35,7 @@ impl State {
         vertex_range: std::ops::Range<u32>,
     ) {
         let mut render_pass = RenderPassBuilder::new()
-            .label("render_pipeline - render_pass")
+            .label("graph:render_pass")
             .color_attachment(target, LoadOp::Load, StoreOp::Store)
             .build(encoder);
 
@@ -53,6 +53,6 @@ impl State {
     }
 
     pub fn update_buffer(&mut self, device: &wgpu::Device, vertices: &[f32]) {
-        self.buffer = buffer_init(device, "graph-buffer", BufferUsages::VERTEX, vertices);
+        self.buffer = buffer_init(device, "graph:buffer", BufferUsages::VERTEX, vertices);
     }
 }

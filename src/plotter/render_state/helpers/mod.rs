@@ -1,14 +1,16 @@
 mod pipeline_builder;
 mod render_pass_builder;
-
+mod bind_group_builder;
 
 
 pub use render_pass_builder::*;
 pub use pipeline_builder::*;
+pub use bind_group_builder::*;
+
 
 
 use iced::widget::shader::wgpu::{
-    self, util::{BufferInitDescriptor, DeviceExt}, BufferUsages, ColorTargetState, Device, ShaderModule
+    self, util::{BufferInitDescriptor, DeviceExt}, ColorTargetState, Device, ShaderModule
 };
 
 /// Only 2D vertices
@@ -37,47 +39,6 @@ pub fn shader_module(device: &Device, label: &str, src: &str) -> ShaderModule {
     })
 }
 
-pub fn single_entry_bind_group<T>(
-    device: &Device, 
-    label: &str, 
-    binding: u32,
-    contents: &[T]
-) -> (wgpu::BindGroup, wgpu::BindGroupLayout)
-    where T: bytemuck::NoUninit
-{
-    let layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-        label: Some(format!("{}-layout", label).as_str()),
-        entries: &[wgpu::BindGroupLayoutEntry {
-            binding,
-            visibility: wgpu::ShaderStages::FRAGMENT,
-            ty: wgpu::BindingType::Buffer {
-                ty: wgpu::BufferBindingType::Uniform,
-                has_dynamic_offset: false,
-                min_binding_size: None,
-            },
-            count: None,
-        }],
-    });
-
-    let buffer = buffer_init(
-        device, 
-        format!("{}-buffer", label).as_str(), 
-        BufferUsages::UNIFORM | BufferUsages::COPY_DST, 
-        contents
-    );
-
-    let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-        label: Some(label),
-        layout: &layout,
-        entries: &[wgpu::BindGroupEntry {
-            binding,
-            resource: buffer.as_entire_binding(),
-        }],
-    });
-
-    (bind_group, layout)
-}
-
 pub fn buffer_init<T>(
     device: &Device, 
     label: &str, 
@@ -93,4 +54,19 @@ pub fn buffer_init<T>(
     })
 }
 
+pub fn color_to_f32(color: [u8; 4]) -> [f32; 4] {
+    [
+        srgb_to_linear(color[0] as f32 / 255.0),
+        srgb_to_linear(color[1] as f32 / 255.0),
+        srgb_to_linear(color[2] as f32 / 255.0),
+        color[3] as f32 / 255.0,
+    ]
+}
 
+fn srgb_to_linear(c: f32) -> f32 {
+    if c <= 0.04045 {
+        c / 12.92
+    } else {
+        ((c + 0.055) / 1.055).powf(2.4)
+    }
+}

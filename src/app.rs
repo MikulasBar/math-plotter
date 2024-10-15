@@ -1,7 +1,7 @@
 use iced::{
     self,
     widget::container,
-    Application, Length, application::{Update, View}, Task
+    Length, Task
 };
 
 use crate::{
@@ -31,22 +31,25 @@ impl Default for App {
 fn update(app: &mut App, message: Message) -> impl Into<Task<Message>> {
     match message {
         Message::KeyPressed(key) => {
-            // self.plotter.update_view(glam::Vec2 { x: 0.0, y: 1.0 });
-            println!("Key pressed: {:?}", key);
+            println!("Key pressed: {key:?}");
         },
 
-        Message::UpdateView(offset) => {
-            app.plotter.update_view(offset);
+        Message::UpdateView(offset, zoom) => {
+            println!("Offset: {offset}, Zoom: {zoom}");
+            app.plotter.update_view(offset, zoom);
         }
     }
-    ()
+    
+    Task::none()
 }
 
 fn view(app: &App) -> iced::Element<Message> {
+    let size = 800.0;
+    
     container(
         app.plotter.get_widget()
-            .height(500)
-            .width(500)
+            .height(size)
+            .width(size)
     )
     .center(Length::Fill)
     .into()

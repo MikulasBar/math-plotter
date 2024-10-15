@@ -11,6 +11,7 @@ use iced::widget::{shader, Shader};
 
 // use builder::{Builder, Unsized};
 
+#[derive(Default)]
 pub struct Plotter {
     scene: Scene
 }
@@ -27,11 +28,11 @@ impl Plotter {
         shader(&self.scene)
     }
 
-    pub fn update_view(&mut self, offset: glam::Vec2) {
-        self.scene.offset += offset;
+    pub fn update_view(&mut self, offset: glam::Vec2, zoom: f32) {
+        self.scene.offset = offset;
+        self.scene.zoom = zoom;
     }
 }
-
 
 #[allow(dead_code)]
 mod builder {
@@ -101,10 +102,3 @@ mod builder {
     }
 }
 
-impl Default for Plotter {
-    fn default() -> Self {
-        Plotter {
-            scene: Scene::default(),
-        }
-    }
-}
