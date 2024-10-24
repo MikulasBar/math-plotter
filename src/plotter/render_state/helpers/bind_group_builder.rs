@@ -10,7 +10,7 @@ pub struct BindGroupBuilder<'a> {
     layout_entries: Vec<BindGroupLayoutEntry>,
 
     // This is a temporary storage for bindgroup entries
-    // we cannot store in Vec<BindGroupEntry> because it will complain about lifetimes
+    // we cannot use Vec<BindGroupEntry> because it will complain about lifetimes
     entry_holders: Vec<EntryHolder>,
 }
 

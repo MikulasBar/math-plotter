@@ -1,31 +1,21 @@
 use std::num::NonZeroU32;
 
 use iced::widget::shader::wgpu::{
-    self, 
-    Device, 
-    RenderPipeline, 
-    RenderPipelineDescriptor, 
-    ShaderModule, 
-    VertexState, 
-    PipelineLayoutDescriptor,
-    ColorTargetState,
-    BindGroupLayout,
-    FragmentState, 
-    PrimitiveState,
-    PrimitiveTopology, 
-    VertexBufferLayout,
+    self, BindGroupLayout, ColorTargetState, Device, FragmentState, PipelineLayoutDescriptor,
+    PrimitiveState, PrimitiveTopology, RenderPipeline, RenderPipelineDescriptor, ShaderModule,
+    VertexBufferLayout, VertexState,
 };
 
 #[derive(Default)]
 pub struct PipelineBuilder<'a> {
-    label:          Option<&'a str>,
-    layout:         Option<wgpu::PipelineLayout>,
-    vertex:         Option<VertexState<'a>>,
-    primitive:      Option<wgpu::PrimitiveState>,
-    depth_stencil:  Option<wgpu::DepthStencilState>,
-    multisample:    Option<wgpu::MultisampleState>,
-    fragment:       Option<wgpu::FragmentState<'a>>,
-    multiview:      Option<NonZeroU32>,
+    label: Option<&'a str>,
+    layout: Option<wgpu::PipelineLayout>,
+    vertex: Option<VertexState<'a>>,
+    primitive: Option<wgpu::PrimitiveState>,
+    depth_stencil: Option<wgpu::DepthStencilState>,
+    multisample: Option<wgpu::MultisampleState>,
+    fragment: Option<wgpu::FragmentState<'a>>,
+    multiview: Option<NonZeroU32>,
 
     device: Option<&'a Device>,
 }
@@ -48,15 +38,23 @@ impl<'a> PipelineBuilder<'a> {
     }
 
     pub fn layout(mut self, label: &'a str, bind_group_layouts: &[&BindGroupLayout]) -> Self {
-        self.layout = Some(self.device().create_pipeline_layout(&PipelineLayoutDescriptor {
-            label: Some(label),
-            bind_group_layouts,
-            push_constant_ranges: &[],
-        }));
+        self.layout = Some(
+            self.device()
+                .create_pipeline_layout(&PipelineLayoutDescriptor {
+                    label: Some(label),
+                    bind_group_layouts,
+                    push_constant_ranges: &[],
+                }),
+        );
         self
     }
 
-    pub fn vertex(mut self, module: &'a ShaderModule, entry_point: &'a str, buffers: &'a [VertexBufferLayout]) -> Self {
+    pub fn vertex(
+        mut self,
+        module: &'a ShaderModule,
+        entry_point: &'a str,
+        buffers: &'a [VertexBufferLayout],
+    ) -> Self {
         self.vertex = Some(VertexState {
             module,
             entry_point,
@@ -83,7 +81,12 @@ impl<'a> PipelineBuilder<'a> {
         self
     }
 
-    pub fn fragment(mut self, module: &'a ShaderModule, entry_point: &'a str, targets: &'a [Option<ColorTargetState>]) -> Self {
+    pub fn fragment(
+        mut self,
+        module: &'a ShaderModule,
+        entry_point: &'a str,
+        targets: &'a [Option<ColorTargetState>],
+    ) -> Self {
         self.fragment = Some(FragmentState {
             module,
             entry_point,
@@ -98,19 +101,15 @@ impl<'a> PipelineBuilder<'a> {
     }
 
     pub fn build(self) -> RenderPipeline {
-        let device = self.device();
-
-        device.create_render_pipeline(&RenderPipelineDescriptor {
-            label:          self.label,
-            layout:         self.layout.as_ref(),
-            vertex:         self.vertex.unwrap(),
-            primitive:      self.primitive.unwrap(),
-            depth_stencil:  self.depth_stencil,
-            multisample:    self.multisample.unwrap(),
-            fragment:       self.fragment,
-            multiview:      self.multiview,
+        self.device().create_render_pipeline(&RenderPipelineDescriptor {
+            label: self.label,
+            layout: self.layout.as_ref(),
+            vertex: self.vertex.unwrap(),
+            primitive: self.primitive.unwrap(),
+            depth_stencil: self.depth_stencil,
+            multisample: self.multisample.unwrap(),
+            fragment: self.fragment,
+            multiview: self.multiview,
         })
     }
 }
-
-

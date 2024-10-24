@@ -45,12 +45,15 @@ impl shader::Program<Message> for Scene {
         let off_x = 2.0 * self.offset.x / bounds.width as f32;
         let off_y = 2.0 * self.offset.y / bounds.height as f32;
 
+        let f = |x: f32| x.sin();
+
+        // these formulas are derived from the main branch :D
         let buffer: Vec<f32> = (-Self::RANGE..Self::RANGE)
             .map(|x| x as f32)
             .map(|x| x / range)
             .flat_map(|x| {
-                let fx = (x - off_x).sin(); 
-                let y = fx - off_y;
+                let fx = f((x - off_x) / self.zoom); 
+                let y = fx * self.zoom - off_y;
                 [x, y]
             })
             .collect();
@@ -96,9 +99,7 @@ impl shader::Program<Message> for Scene {
                         let offset = new_pos - *start;
                         let new_offset = self.offset + offset;
 
-                        // update the cursor position
                         *state = State::LeftButtonDown(new_pos);
-                        
 
                         return (EventStatus::Captured, Some(Message::UpdateView(new_offset, self.zoom)));
                     },
@@ -107,8 +108,10 @@ impl shader::Program<Message> for Scene {
             },
 
             event!(MOUSE SCROLL: delta) => {
-                let zoom = self.zoom + delta_to_zoom(delta);
-                return (EventStatus::Captured, Some(Message::UpdateView(self.offset, zoom)));
+                // zoom is used as scale factor so we use the zoom = zoom*(1 - c*delta)
+                // instead of zoom = zoom + c*delta (also zoom would go negative)
+                let new_zoom = self.zoom * (1.0 + delta_to_zoom(delta));
+                return (EventStatus::Captured, Some(Message::UpdateView(self.offset, new_zoom)));
             },
 
             _ => return (EventStatus::Ignored, None),
@@ -132,7 +135,7 @@ impl Default for State {
 
 fn delta_to_zoom(delta: ScrollDelta) -> f32 {
     match delta {
-        ScrollDelta::Lines { y, .. } => y,
-        ScrollDelta::Pixels { y, .. } => y,
+        ScrollDelta::Lines { y, .. } => y * 0.1,
+        ScrollDelta::Pixels { y, .. } => y * 1.0,
     }
 }

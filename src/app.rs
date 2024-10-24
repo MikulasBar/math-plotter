@@ -10,7 +10,7 @@ use crate::{
 };
 
 
-pub fn run_default() -> iced::Result {
+pub fn run() -> iced::Result {
     iced::application("Plotter app", update, view)
         .resizable(true)
         .run()

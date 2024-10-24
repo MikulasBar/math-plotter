@@ -9,8 +9,6 @@ use crate::message::Message;
 use scene::Scene;
 use iced::widget::{shader, Shader};
 
-// use builder::{Builder, Unsized};
-
 #[derive(Default)]
 pub struct Plotter {
     scene: Scene

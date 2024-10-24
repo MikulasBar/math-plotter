@@ -1,16 +1,15 @@
+mod bind_group_builder;
 mod pipeline_builder;
 mod render_pass_builder;
-mod bind_group_builder;
 
-
-pub use render_pass_builder::*;
-pub use pipeline_builder::*;
 pub use bind_group_builder::*;
-
-
+pub use pipeline_builder::*;
+pub use render_pass_builder::*;
 
 use iced::widget::shader::wgpu::{
-    self, util::{BufferInitDescriptor, DeviceExt}, ColorTargetState, Device, ShaderModule
+    self,
+    util::{BufferInitDescriptor, DeviceExt},
+    ColorTargetState, Device, ShaderModule,
 };
 
 /// Only 2D vertices
@@ -40,12 +39,13 @@ pub fn shader_module(device: &Device, label: &str, src: &str) -> ShaderModule {
 }
 
 pub fn buffer_init<T>(
-    device: &Device, 
-    label: &str, 
-    usage: wgpu::BufferUsages, 
-    contents: &[T]
+    device: &Device,
+    label: &str,
+    usage: wgpu::BufferUsages,
+    contents: &[T],
 ) -> wgpu::Buffer
-    where T: bytemuck::NoUninit,
+where
+    T: bytemuck::NoUninit,
 {
     device.create_buffer_init(&BufferInitDescriptor {
         label: Some(label),
