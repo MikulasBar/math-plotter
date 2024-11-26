@@ -3,14 +3,14 @@ use iced::advanced::graphics::Viewport;
 use super::render_state::RenderState;
 #[derive(Debug, Clone)]
 pub struct Primitive {
-    buffer: Vec<f32>,
+    buffer: Vec<[f32; 2]>,
     vertex_count: u32,
 }
 
 impl Primitive {
-    pub fn new(buffer: Vec<f32>) -> Self {
+    pub fn new(buffer: Vec<[f32; 2]>) -> Self {
         Primitive {
-            vertex_count: buffer.len() as u32 / 2,
+            vertex_count: buffer.len() as u32,
             buffer,
         }
     }
@@ -65,19 +65,16 @@ impl shader::Primitive for Primitive {
 
 // TODO: optimize this
 // the vector is duplicated, i think it can be done without it
-fn scale_to_bounds(buffer: &Vec<f32>, viewport: &Viewport, bounds: &iced::Rectangle) -> Vec<f32> {
+fn scale_to_bounds(buffer: &[[f32; 2]], viewport: &Viewport, bounds: &iced::Rectangle) -> Vec<f32> {
     let win_size = viewport.logical_size();
     let w_scale = bounds.width / win_size.width as f32;
     let h_scale = bounds.height / win_size.height as f32;
 
     buffer.iter()
-        .enumerate()
-        .map(|(i, n)| {
-            if i % 2 == 0 {
-                n * w_scale
-            } else {
-                n * h_scale
-            }
+        .flat_map(|[x, y]| {
+            let x = x * w_scale;
+            let y = y * h_scale;
+            [x, y]
         })
         .collect()
 }

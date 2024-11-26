@@ -1,10 +1,4 @@
-use rand::random;
 
-/// returns a random f32 between -1.0 and 1.0
-pub fn rnd_signed() -> f32 {
-    let sign = if random::<bool>() { 1.0 } else { -1.0 };
-    sign * random::<f32>()
-}
 
 pub trait GlamVec2Ext {
     fn to_point(&self) -> iced::Point;
@@ -36,3 +30,4 @@ impl GlamVec2Ext for glam::Vec2 {
         glam::Vec2::new(vector.x, vector.y)
     }
 }
+

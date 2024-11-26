@@ -47,17 +47,18 @@ impl shader::Program<Message> for Scene {
 
         let f = |x: f32| x.sin();
 
-        // these formulas are derived from the main branch :D
-        let buffer: Vec<f32> = (-Self::RANGE..Self::RANGE)
+        // these formulas are derived from the previous commits on the main branch :D
+        let buffer: Vec<[f32; 2]> = (-Self::RANGE..Self::RANGE)
             .map(|x| x as f32)
             .map(|x| x / range)
-            .flat_map(|x| {
+            .map(|x| {
                 let fx = f((x - off_x) / self.zoom); 
                 let y = fx * self.zoom - off_y;
                 [x, y]
             })
             .collect();
 
+        // TODO: optimize this, additive vector is allocated, pass only the iterator if possible
         Primitive::new(buffer)
     }
 
@@ -75,15 +76,11 @@ impl shader::Program<Message> for Scene {
         // }
 
         match event {
-            event!(KB PRESS: key) => {
-                return (EventStatus::Captured, Some(Message::KeyPressed(key)))
-            },
+            // event!(KB PRESS: key) => {
+            //     return (EventStatus::Captured, Some(Message::KeyPressed(key)))
+            // },
 
-            event!(MOUSE LEFT_DOWN) => {
-                if !cursor.is_over(bounds) {
-                    return (EventStatus::Ignored, None);
-                }
-                
+            event!(MOUSE LEFT_DOWN) if cursor.is_over(bounds) => {
                 let vector = Vec2::from_point(cursor.position().unwrap());
                 *state = State::LeftButtonDown(vector);
             },
@@ -93,28 +90,30 @@ impl shader::Program<Message> for Scene {
             },
 
             event!(MOUSE MOVE: new_pos) => {
-                match state {
-                    State::LeftButtonDown(start) => {
-                        let new_pos = Vec2::from_point(new_pos);
-                        let offset = new_pos - *start;
-                        let new_offset = self.offset + offset;
+                let State::LeftButtonDown(start) = state else {return (EventStatus::Ignored, None)};
 
-                        *state = State::LeftButtonDown(new_pos);
+                let new_pos = Vec2::from_point(new_pos);
+                let offset = new_pos - *start;
+                let new_offset = self.offset + offset;
 
-                        return (EventStatus::Captured, Some(Message::UpdateView(new_offset, self.zoom)));
-                    },
-                    _ => return (EventStatus::Ignored, None),
-                }
+                *state = State::LeftButtonDown(new_pos);
+
+                return (EventStatus::Captured, Some(Message::UpdateView(new_offset, self.zoom)));
             },
 
-            event!(MOUSE SCROLL: delta) => {
+            event!(MOUSE SCROLL: delta) if cursor.is_over(bounds) => {
+                // cursor is relative to the center of the bounds
+                let cursor_pos = Vec2::from_iced_vec(cursor.position_over(bounds).unwrap() - bounds.center()) - self.offset;
+
                 // zoom is used as scale factor so we use the zoom = zoom*(1 - c*delta)
                 // instead of zoom = zoom + c*delta (also zoom would go negative)
                 let new_zoom = self.zoom * (1.0 + delta_to_zoom(delta));
-                return (EventStatus::Captured, Some(Message::UpdateView(self.offset, new_zoom)));
+                // TODO: make documetation for this formula
+                let new_offset = self.offset + cursor_pos * (1.0 - new_zoom / self.zoom); 
+                return (EventStatus::Captured, Some(Message::UpdateView(new_offset, new_zoom)));
             },
 
-            _ => return (EventStatus::Ignored, None),
+            _ => (),
         }
 
         (EventStatus::Ignored, None)

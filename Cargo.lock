@@ -1718,13 +1718,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "math-lib"
+version = "0.1.0"
+source = "git+https://github.com/MikulasBar/math-lib.git#41678c205b670e2ebb8119955765953985880a9d"
+
+[[package]]
 name = "math-plotter"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
  "glam 0.29.0",
  "iced",
- "rand",
+ "math-lib",
 ]
 
 [[package]]
