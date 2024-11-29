@@ -1,4 +1,4 @@
-use iced::widget::shader::wgpu::{self, BufferUsages, LoadOp, StoreOp};
+use iced::widget::shader::wgpu::{self, BufferUsages, Color, LoadOp, StoreOp};
 use super::helpers::*;
 
 pub struct State {
@@ -31,7 +31,7 @@ impl State {
         &self,
         encoder: &mut wgpu::CommandEncoder,
         target: &wgpu::TextureView,
-        viewport: iced::Rectangle<u32>,
+        bounds: iced::Rectangle<u32>,
         vertex_range: std::ops::Range<u32>,
     ) {
         let mut render_pass = RenderPassBuilder::new()
@@ -42,17 +42,28 @@ impl State {
         render_pass.set_pipeline(&self.pipeline);
         render_pass.set_vertex_buffer(0, self.buffer.slice(..));
         render_pass.set_scissor_rect(
-            viewport.x, 
-            viewport.y,
-            viewport.width, 
-            viewport.height
+            bounds.x,
+            bounds.y,
+            bounds.width, 
+            bounds.height
+        );
+
+        // Viewport is mandatory for the shader to work
+        // Without it th shader will draw thing on the whole screen
+        // Node that this doesn't fix the LoadOp::Clear issue
+        render_pass.set_viewport(
+            bounds.x as f32,
+            bounds.y as f32, 
+            bounds.width as f32,
+            bounds.height as f32,
+            0.0,
+            1.0
         );
 
         render_pass.draw(vertex_range, 0..1);
-        drop(render_pass);
     }
 
-    pub fn update_buffer(&mut self, device: &wgpu::Device, vertices: &[f32]) {
-        self.buffer = buffer_init(device, "graph:buffer", BufferUsages::VERTEX, vertices);
+    pub fn update_buffer(&mut self, device: &wgpu::Device, buffer: &[f32]) {
+        self.buffer = buffer_init(device, "graph:buffer", BufferUsages::VERTEX, buffer);
     }
 }

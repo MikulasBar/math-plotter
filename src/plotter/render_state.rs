@@ -20,7 +20,7 @@ impl RenderState {
             graph,
         }
     }
-
+    
     pub fn render(
         &self, 
         encoder: &mut wgpu::CommandEncoder, 

@@ -64,18 +64,26 @@ impl State {
     pub fn render(
         &self,
         encoder: &mut wgpu::CommandEncoder,
-        frame: &wgpu::TextureView,
+        target: &wgpu::TextureView,
         bounds: iced::Rectangle<u32>,
     ) {
         let mut render_pass = RenderPassBuilder::new()
             .label("background:render_pass")
-            .color_attachment(frame, LoadOp::Load, StoreOp::Store)
+            .color_attachment(target, LoadOp::Load, StoreOp::Store)
             .build(encoder);
 
         render_pass.set_pipeline(&self.pipeline);
         render_pass.set_vertex_buffer(0, self.buffer.slice(..));
         render_pass.set_bind_group(0, &self.color_group, &[]);
         render_pass.set_scissor_rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        // render_pass.set_viewport(
+        //     bounds.x as f32,
+        //     bounds.y as f32,
+        //     bounds.width as f32,
+        //     bounds.height as f32,
+        //     0.0,
+        //     1.0,
+        // );
         render_pass.draw(0..4, 0..1);
     }
 }

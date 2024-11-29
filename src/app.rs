@@ -44,11 +44,12 @@ fn update(app: &mut App, message: Message) -> impl Into<Task<Message>> {
 }
 
 fn view(app: &App) -> iced::Element<Message> {
-    const SIZE: f32 = 800.0;
+    const WIDTH: f32 = 800.0;
+    const HEIGHT: Length = Length::Fill;
     
     container(
-        app.plotter.with_size(SIZE, SIZE)
+        app.plotter.with_size(WIDTH, HEIGHT)
     )
-    .center(Length::Fill)
+    .align_right(Length::Fill)
     .into()
 }

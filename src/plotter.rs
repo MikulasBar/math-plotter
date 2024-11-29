@@ -18,10 +18,7 @@ impl Plotter {
     pub fn new() -> Plotter {
         Plotter::default()
     }
-}
 
-
-impl Plotter {
     pub fn get_widget(&self) -> Shader<Message, &Scene> {
         shader(&self.scene)
     }
@@ -31,7 +28,11 @@ impl Plotter {
         self.scene.zoom = zoom;
     }
 
-    pub fn with_size(&self, width: f32, height: f32) -> Shader<Message, &Scene> {
+    pub fn with_size<T, U>(&self, width: T, height: U) -> Shader<Message, &Scene>
+    where
+        T: Into<iced::Length>,
+        U: Into<iced::Length>
+    {
         self.get_widget()
             .width(width)
             .height(height)

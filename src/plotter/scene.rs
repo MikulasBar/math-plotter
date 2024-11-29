@@ -23,7 +23,7 @@ impl Scene {
 impl Default for Scene {
     fn default() -> Self {
         Scene {
-            elements: Vec::new(),
+            elements: vec![],
             offset: Vec2::ZERO,
             zoom: 1.0,
         }
@@ -48,17 +48,16 @@ impl shader::Program<Message> for Scene {
         let f = |x: f32| x.sin();
 
         // these formulas are derived from the previous commits on the main branch :D
-        let buffer: Vec<[f32; 2]> = (-Self::RANGE..Self::RANGE)
+        let buffer: Vec<f32> = (-Self::RANGE..Self::RANGE)
             .map(|x| x as f32)
             .map(|x| x / range)
-            .map(|x| {
+            .flat_map(|x| {
                 let fx = f((x - off_x) / self.zoom); 
                 let y = fx * self.zoom - off_y;
                 [x, y]
             })
             .collect();
 
-        // TODO: optimize this, additive vector is allocated, pass only the iterator if possible
         Primitive::new(buffer)
     }
 
