@@ -35,7 +35,6 @@ fn update(app: &mut App, message: Message) -> impl Into<Task<Message>> {
         },
 
         Message::UpdateView(offset, zoom) => {
-            // println!("Offset: {offset}, Zoom: {zoom}");
             app.plotter.update_view(offset, zoom);
         }
     }
@@ -44,7 +43,7 @@ fn update(app: &mut App, message: Message) -> impl Into<Task<Message>> {
 }
 
 fn view(app: &App) -> iced::Element<Message> {
-    const WIDTH: f32 = 800.0;
+    const WIDTH: Length = Length::Fixed(300.0);
     const HEIGHT: Length = Length::Fill;
     
     container(

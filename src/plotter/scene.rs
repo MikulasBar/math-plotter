@@ -8,10 +8,11 @@ use iced::widget::shader::{self, Event as ShaderEvent};
 use iced::{advanced, mouse};
 use iced::event::Status as EventStatus;
 use iced::mouse::ScrollDelta;
-
+use math_lib::prelude::Expr;
 
 pub struct Scene {
-    elements: Vec<Element>,
+    // elements: Vec<Element>,
+    func: Expr,
     pub offset: Vec2,
     pub zoom: f32,
 }
@@ -23,7 +24,8 @@ impl Scene {
 impl Default for Scene {
     fn default() -> Self {
         Scene {
-            elements: vec![],
+            // elements: vec![],
+            func: Expr::parse("sin(x)").unwrap(),
             offset: Vec2::ZERO,
             zoom: 1.0,
         }
@@ -44,8 +46,11 @@ impl shader::Program<Message> for Scene {
 
         let off_x = 2.0 * self.offset.x / bounds.width as f32;
         let off_y = 2.0 * self.offset.y / bounds.height as f32;
+        // We need to use this scale ratio, to keep the aspect ratio of the plot
+        // because when the plot is not a square, the viewport will stretch the plot
+        let scale_wh = bounds.width as f32 / bounds.height as f32;
 
-        let f = |x: f32| x.sin();
+        let f = |x: f32| self.func.eval_with_variable("x", x).unwrap();
 
         // these formulas are derived from the previous commits on the main branch :D
         let buffer: Vec<f32> = (-Self::RANGE..Self::RANGE)
@@ -54,7 +59,7 @@ impl shader::Program<Message> for Scene {
             .flat_map(|x| {
                 let fx = f((x - off_x) / self.zoom); 
                 let y = fx * self.zoom - off_y;
-                [x, y]
+                [x, y * scale_wh]
             })
             .collect();
 

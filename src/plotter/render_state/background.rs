@@ -3,6 +3,11 @@ use iced::widget::shader::wgpu::{
     self, BufferUsages, Device, LoadOp, PrimitiveTopology, ShaderStages, StoreOp,
 };
 
+
+// We need to render background manually.
+// LoadOp::Clear cleares the whole screen no matter how the viewport is set.
+// So we need to draw a rectangle with the background color. 
+
 pub struct State {
     pipeline: wgpu::RenderPipeline,
     buffer: wgpu::Buffer,

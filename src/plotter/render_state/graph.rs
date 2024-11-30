@@ -48,9 +48,9 @@ impl State {
             bounds.height
         );
 
-        // Viewport is mandatory for the shader to work
+        // Viewport set is mandatory for the shader to work
         // Without it th shader will draw thing on the whole screen
-        // Node that this doesn't fix the LoadOp::Clear issue
+        // Note that this doesn't fix the LoadOp::Clear issue
         render_pass.set_viewport(
             bounds.x as f32,
             bounds.y as f32, 
