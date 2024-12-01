@@ -25,8 +25,8 @@ impl shader::Primitive for Primitive {
         _queue: &shader::wgpu::Queue,
         _format: shader::wgpu::TextureFormat,
         storage: &mut shader::Storage,
-        bounds: &iced::Rectangle,
-        viewport: &Viewport,
+        _bounds: &iced::Rectangle,
+        _viewport: &Viewport,
     ) {
         if !storage.has::<RenderState>() {
             let render_state = RenderState::new(device, &self.buffer);

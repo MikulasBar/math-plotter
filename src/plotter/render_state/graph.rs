@@ -1,4 +1,4 @@
-use iced::widget::shader::wgpu::{self, BufferUsages, Color, LoadOp, StoreOp};
+use iced::widget::shader::wgpu::{self, BufferUsages, LoadOp, StoreOp};
 use super::helpers::*;
 
 pub struct State {

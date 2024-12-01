@@ -1,4 +1,3 @@
-use super::element::Element;
 use super::events::*;
 use crate::message::Message;
 use crate::utilities::GlamVec2Ext;
@@ -12,13 +11,13 @@ use math_lib::prelude::Expr;
 
 pub struct Scene {
     // elements: Vec<Element>,
-    func: Expr,
+    pub func: Expr,
     pub offset: Vec2,
     pub zoom: f32,
 }
 
 impl Scene {
-    const RANGE: i32 = 100;
+    const RANGE: i32 = 200;
 }
 
 impl Default for Scene {
@@ -48,19 +47,22 @@ impl shader::Program<Message> for Scene {
         let off_y = 2.0 * self.offset.y / bounds.height as f32;
         // We need to use this scale ratio, to keep the aspect ratio of the plot
         // because when the plot is not a square, the viewport will stretch the plot
-        let scale_wh = bounds.width as f32 / bounds.height as f32;
+        let wh_ratio = bounds.width as f32 / bounds.height as f32;
 
-        let f = |x: f32| self.func.eval_with_variable("x", x).unwrap();
+        let func = |x: f32| self.func.eval_with_variable("x", x);
 
         // these formulas are derived from the previous commits on the main branch :D
         let buffer: Vec<f32> = (-Self::RANGE..Self::RANGE)
             .map(|x| x as f32)
             .map(|x| x / range)
-            .flat_map(|x| {
-                let fx = f((x - off_x) / self.zoom); 
+            .filter_map(|x| {
+                let Ok(fx) = func((x - off_x) / self.zoom) else {return None};
+
                 let y = fx * self.zoom - off_y;
-                [x, y * scale_wh]
+
+                Some([x, y * wh_ratio])
             })
+            .flatten()
             .collect();
 
         Primitive::new(buffer)
