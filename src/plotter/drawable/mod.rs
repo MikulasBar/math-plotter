@@ -1,4 +1,4 @@
-pub mod element; 
+pub mod element;
 mod point;
 mod graph;
 

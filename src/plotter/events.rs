@@ -11,32 +11,32 @@
 //     plotter::view::View,
 // };
 
-
+#[macro_export]
+macro_rules! mouse_event {
+    (MOVE: $point:ident) => {
+        MouseEvent::CursorMoved {
+            position: $point,
+        }
+    }; 
+    (LEFT_DOWN) => {
+        MouseEvent::ButtonPressed(MouseButton::Left)
+    };
+    (LEFT_UP) => {
+        MouseEvent::ButtonReleased(MouseButton::Left)
+    };
+    (SCROLL: $delta:ident) => {
+        MouseEvent::WheelScrolled {
+            delta: $delta
+        }
+    };
+}
 
 #[macro_export]
 macro_rules! event {
-    (MOUSE_MOVE: $point:ident) => {
+    (MOUSE $($tt:tt)*) => {
         CanvasEvent::Mouse(
-            MouseEvent::CursorMoved {
-                position: $point,
-            }
-        )
-    };
-    (MOUSE_LEFT_DOWN) => {
-        CanvasEvent::Mouse(
-            MouseEvent::ButtonPressed(MouseButton::Left)
-        )
-    };
-    (MOUSE_LEFT_UP) => {
-        CanvasEvent::Mouse(
-            MouseEvent::ButtonReleased(MouseButton::Left)
-        )
-    };
-    (MOUSE_SCROLL: $delta:ident) => {
-        CanvasEvent::Mouse(
-            MouseEvent::WheelScrolled {
-                delta: $delta
-            }
+            mouse_event!($($tt)*)
         )
     };
 }
+

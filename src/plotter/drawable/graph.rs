@@ -10,58 +10,48 @@ use super::imports::{
     Element,
 };
 
-
-
-type Func = fn(f32) -> f32;
+use math_lib::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct GraphElem {
-    func: Func,
+    func: Expr,
     color: Color
 }
 
 impl GraphElem {
-    pub fn new(func: Func, color: Color) -> Self {
+    pub fn new(func: Expr, color: Color) -> Self {
         Self {
             func,
             color
         }
     }
-    
-    pub fn draw(&self, origin: &Vec2, view: &View, frame: &mut Frame) {
+
+    fn eval(&self, x: f32) -> Result<f32, EvalError> {
+        self.func.eval_with_variable("x", x)
+    }
+        
+    pub fn draw(&self, origin: Vec2, view: View, frame: &mut Frame) {
+        const AMOUNT: u16 = 1000;
+        
+        let mut points = nums_in_view(AMOUNT, view)
+            .map(|x| (x, self.eval(x)))
+            .filter_map(|(x, res)| validate(x, res))
+            .map(|v| v.prepare_for_drawing(origin, view));
+
+
         let path = Path::new(|builder| {
-            const MIN_RANGE     : i32 = 100;
-            const RANGE_SCALE   : f32 = 0.1;
-
-            let scaled_offset = view.offset.x / view.zoom;
-            let scaled_range = (MIN_RANGE as f32 * view.zoom) as i32;
-            let range = MIN_RANGE.max(scaled_range);
-            
-            // create vectors on the graph, its iterator,
-            // collecting all items would be slow
-            let mut points = (-range..=range)
-                .map(|x| x as f32)
-                .map(|x| x * RANGE_SCALE)
-                .map(|x| x as f32 - scaled_offset)
-                .map(|x| Vec2::new(x, (self.func)(x)))
-                .map(|v| v.prepare_for_drawing(*origin, view));
-
-
             // move to starting vector
-            let start = points.next()
-                .unwrap();
-
+            let Some(start) = points.next() else {println!("no point is valid"); return};
             builder.move_to(start);
-
 
             for p in points {
                 builder.line_to(p);
             }
-            
         });
 
         let stroke = Stroke {
             style: Style::from(self.color),
+            width: 3.0,
             ..Default::default()
         };
 
@@ -69,9 +59,28 @@ impl GraphElem {
     }
 }
 
+mod froms {
+    use super::*;
 
-impl Into<Element> for GraphElem {
-    fn into(self) -> Element {
-        Element::Graph(self)
+    impl From<GraphElem> for Element {
+        fn from(graph: GraphElem) -> Self {
+            Element::Graph(graph)
+        }
     }
+}
+
+
+
+fn nums_in_view(amount: u16, view: View) -> impl Iterator<Item = f32> {
+    let start = - (2.0 * view.offset.x + view.size.width) / (2.0 * view.zoom);
+    let gap = view.size.width / (view.zoom * amount as f32);
+
+    (0..amount)
+        .map(move |n| {
+            start + gap * (n as f32)
+        })
+}
+
+fn validate(x: f32, res: Result<f32, EvalError>) -> Option<Vec2> {
+    res.ok().map(|y| Vec2::new(x, y))
 }

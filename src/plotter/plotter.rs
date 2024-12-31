@@ -1,6 +1,6 @@
 use super::imports::*;
 
-use builder::Builder;
+use builder::{Builder, Unsized};
 
 pub struct Plotter {
     elements: Vec<Element>,
@@ -10,76 +10,45 @@ pub struct Plotter {
 }
 
 impl Plotter {
-    pub fn builder() -> Builder {
-        Builder::default()
+    pub fn builder() -> Builder<Unsized> {
+        Builder::<Unsized>::new()
     }
 
-    // pub fn canvas(&self, width: Length, height: Length) -> Canvas<&Self, Message> {
-    //     canvas(self)
-    //         .width(width)
-    //         .height(height)
-    // }
+    pub fn get_canvas(&self) -> Canvas<&Self, Message> {
+        let size = &self.view.size;
+
+        canvas(self)
+            .width(size.width)
+            .height(size.height)
+    }
 
     pub fn update_view(&mut self, view: View) {
         self.view = view;
     }
 
-    // pub fn add_elements(&mut self, elements: Vec<Element>) {
-    //     self.elements.extend(elements);
-    // }
+    pub fn add_element(&mut self, element: Element) {
+        self.elements.push(element);
+    }
 
     pub fn clear_cache(&self) {
         self.cache.clear();
     }
 
-    fn draw_elements(&self, frame: &mut Frame, origin: &Vec2) {
+    pub fn clear_elements(&mut self) {
+        self.elements.clear();
+    }
+
+    fn draw_elements(&self, frame: &mut Frame, origin: Vec2) {
         self.elements.iter().for_each(|elem| {
-            elem.draw(frame, origin, &self.view);
+            elem.draw(frame, origin, self.view);
         });
     }
 
     fn draw_background(&self, frame: &mut Frame) {
         let color = self.settings.background;
         let path = Path::rectangle(Point::ORIGIN, frame.size());
+
         frame.fill(&path, color);
-    }
-
-    fn draw_axis(&self, frame: &mut Frame, origin: &Vec2) {
-        let color = self.settings.axis;
-        let Size { width, height } = frame.size();
-        let stroke = Stroke {
-            style: Style::from(color),
-            ..Default::default()
-        };
-
-        let View {
-            offset: Vec2{x: o_x, y: o_y},
-            ..
-        } = self.view;
-
-        // Draw horizontal axis
-        let start_point = Vec2::new(width - o_x, 0.0)
-            .prepare_for_drawing(*origin, &self.view);
-
-        let end_point = Vec2::new(-width - o_x, 0.0)
-            .prepare_for_drawing(*origin, &self.view);
-
-        let path = Path::line(start_point, end_point);
-
-        frame.stroke(&path, stroke.clone());
-
-
-
-        // Draw vertical axis
-        let start_point = Vec2::new(0.0, height + o_y)
-            .prepare_for_drawing(*origin, &self.view);
-
-        let end_point = Vec2::new(0.0, -height + o_y)
-            .prepare_for_drawing(*origin, &self.view);
-
-        let path = Path::line(start_point, end_point);
-
-        frame.stroke(&path, stroke);
     }
 }
 
@@ -101,23 +70,22 @@ impl canvas::Program<Message> for Plotter {
             &self,
             state: &mut Self::State,
             event: CanvasEvent,
-            _bounds: Rectangle,
+            bounds: Rectangle,
             cursor: mouse::Cursor,
     ) -> (CanvasStatus, Option<Message>) {
-        // if !cursor.is_over(bounds) {
-        //     return (CanvasStatus::Ignored, None);
-        // }
+        if !cursor.is_over(bounds) {
+            return (CanvasStatus::Ignored, None);
+        }
         
         match event {
-            _ => (),
-            event!(MOUSE_LEFT_DOWN) => {
+            event!(MOUSE LEFT_DOWN) => {
                 let pos: Vec2 = cursor.position().unwrap().into();
                 *state = State::LeftButtonDown(pos);
             },
-            event!(MOUSE_LEFT_UP) => {
+            event!(MOUSE LEFT_UP) => {
                 *state = State::Idle;
             },
-            event!(MOUSE_MOVE: new_pos) => {
+            event!(MOUSE MOVE: new_pos) => {
                 if let State::LeftButtonDown(old_pos) = *state {
                     let old_offset = self.view.offset;
                     let offset: Vec2 = Vec2::from(new_pos) - old_pos;
@@ -133,7 +101,7 @@ impl canvas::Program<Message> for Plotter {
                     return (CanvasStatus::Captured, Some(Message::UpdateView(view)))
                 }
             },
-            event!(MOUSE_SCROLL: delta) => {
+            event!(MOUSE SCROLL: delta) => {
                 let old_zoom = self.view.zoom;
                 let coef = View::zoom_coef(delta);
                 
@@ -158,13 +126,11 @@ impl canvas::Program<Message> for Plotter {
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<Geometry> { 
-        
         let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
             let origin = Vec2::new(bounds.width, bounds.height) / 2.0;
 
             self.draw_background(frame);    
-            // self.draw_axis(frame, &origin);
-            self.draw_elements(frame, &origin);
+            self.draw_elements(frame, origin);
         });
 
         vec![geometry]
@@ -181,60 +147,56 @@ pub enum State {
 
 mod builder {
 
-    use super::Plotter;
+    use std::marker::PhantomData;
+
+    use super::{Plotter, View};
 
     #[rustfmt::skip]
     use super::super::imports::{
         Settings,
         Element,
-        Color
+        Size,
     };
 
-    pub struct Builder {
+    pub struct Unsized;
+    pub struct Sized;
+
+    pub struct Builder<T> {
         settings: Settings,
         elements: Vec<Element>,
+        view: View,
+        _marker: PhantomData<T>
     }
 
-    impl Default for Builder {
-        fn default() -> Self {
-            Self {
+    impl<T> Builder<T> {
+        pub fn new() -> Builder<Unsized> {
+            Builder {
                 settings: Settings::default(),
                 elements: Vec::new(),
+                view: View::default(),
+                _marker: PhantomData
+            }
+        }
+
+        pub fn size(self, width: f32, height: f32) -> Builder<Sized> {
+            let Builder { mut view, ..} = self;
+            view.size = Size::new(width, height);
+
+            Builder {
+                settings: self.settings,
+                elements: self.elements,
+                view,
+                _marker: PhantomData,
             }
         }
     }
 
-    impl Builder {
-        // pub fn add_elements(mut self, elements: Vec<Element>) -> Self {
-        //     self.elements.extend(elements);
-        //     self
-        // }
-
-        pub fn add_sin_test(mut self) -> Self {
-            let sin = |x: f32| x.sin();
-            self.elements.push(Element::from( (sin as fn(f32) -> f32, Color::WHITE) ));
-            self
-        }
-
-        // pub fn add_control_points(mut self) -> Self {
-        //     let center = Element::from( (Vec2::ZERO, Color::WHITE) );
-        //     let right = Element::from( (Vec2::UNIT_X * 100.0, Color::WHITE) );
-        //     let up = Element::from( (Vec2::UNIT_Y * 100.0, Color::WHITE) );
-        
-        //     self.elements.extend(vec![center, right, up]);
-
-        //     self
-        // }
-
-        // pub fn background(mut self, color: Color) -> Self {
-        //     self.settings.background = color;
-        //     self
-        // }
-
+    impl Builder<Sized> {
         pub fn build(self) -> Plotter {
             Plotter {
                 settings: self.settings,
                 elements: self.elements,
+                view: self.view,
                 ..Plotter::default()
             }
         }
