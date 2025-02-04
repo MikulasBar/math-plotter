@@ -1,20 +1,34 @@
-use iced::widget::shader::wgpu::{self, BufferUsages, LoadOp, StoreOp};
+use iced::widget::shader::wgpu::{self, BufferUsages, LoadOp, ShaderStages, StoreOp};
 use super::helpers::*;
 
 pub struct State {
     pipeline: wgpu::RenderPipeline,
     buffer: wgpu::Buffer,
+    color_group: wgpu::BindGroup,
 }
 
 
 impl State {
+    const BLUE: [u8; 4] = [0x00, 0x00, 0xFF, 0xFF];
+
     pub fn new(device: &wgpu::Device, vertices: &[f32]) -> Self {
         let shader_module = shader_module(device, "graph:shader_module", include_str!("shaders/graph.wgsl"));
         let buffer = buffer_init(device, "graph:buffer", BufferUsages::VERTEX, vertices);
 
+        let (color_group, color_group_layout) = BindGroupBuilder::new(device, "graph:color_group")
+            .add_entry(
+                "graph:color_group:color",
+                0,
+                BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+                ShaderStages::FRAGMENT,
+                None,
+                &color_to_f32(Self::BLUE),
+            )
+            .build();
+
         let pipeline = PipelineBuilder::new(device)
             .label("graph:pipeline")
-            .layout("graph:pipeline_layout", &[])
+            .layout("graph:pipeline_layout", &[&color_group_layout])
             .vertex(&shader_module, "vs_main", &[VERTEX2D_VERTEX_LAYOUT])
             .fragment(&shader_module, "fs_main", &[Some(STANDARD_COLOR_TARGET_STATE)])
             .primitive(wgpu::PrimitiveTopology::LineStrip)
@@ -24,6 +38,7 @@ impl State {
         Self {
             pipeline,
             buffer,
+            color_group,
         }
     }
 
@@ -41,6 +56,7 @@ impl State {
 
         render_pass.set_pipeline(&self.pipeline);
         render_pass.set_vertex_buffer(0, self.buffer.slice(..));
+        render_pass.set_bind_group(0, &self.color_group, &[]);
         render_pass.set_scissor_rect(
             bounds.x,
             bounds.y,
