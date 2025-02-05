@@ -11,9 +11,9 @@ pub struct RenderState {
 
 
 impl RenderState {
-    pub fn new(device: &wgpu::Device, buffer: &[f32]) -> Self {
+    pub fn new(device: &wgpu::Device, buffers: &[Vec<f32>]) -> Self {
         let background = background::State::new(device);
-        let graph = graph::State::new(device, buffer);
+        let graph = graph::State::new(device, buffers);
 
         Self {
             background,
@@ -25,11 +25,10 @@ impl RenderState {
         &self, 
         encoder: &mut wgpu::CommandEncoder, 
         target: &wgpu::TextureView, 
-        bounds: iced::Rectangle<u32>, 
-        graph_range: std::ops::Range<u32>)
-    {
+        bounds: iced::Rectangle<u32>
+    ) {
         self.background.render(encoder, target, bounds);
-        self.graph.render(encoder, target, bounds, graph_range);
+        self.graph.render(encoder, target, bounds);
     }
 }
 

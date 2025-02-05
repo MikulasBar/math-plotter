@@ -3,19 +3,19 @@ use iced::advanced::graphics::Viewport;
 use super::render_state::RenderState;
 #[derive(Clone, Debug)]
 pub struct Primitive {
-    buffer: Vec<f32>,
+    buffers: Vec<Vec<f32>>,
 }
 
 impl Primitive {
-    pub fn new(buffer: Vec<f32>) -> Self {
+    pub fn new(buffers: Vec<Vec<f32>>) -> Self {
         Primitive {
-            buffer,
+            buffers,
         }
     }
 
-    fn vertex_count(&self) -> u32 {
-        self.buffer.len() as u32 / 2
-    }
+    // fn vertex_count(&self, ) -> u32 {
+    //     self.buffer.len() as u32 / 2
+    // }
 }
 
 impl shader::Primitive for Primitive {
@@ -29,13 +29,13 @@ impl shader::Primitive for Primitive {
         _viewport: &Viewport,
     ) {
         if !storage.has::<RenderState>() {
-            let render_state = RenderState::new(device, &self.buffer);
+            let render_state = RenderState::new(device, &self.buffers);
             storage.store(render_state);
             return;
         }
 
         let render_state = storage.get_mut::<RenderState>().unwrap();
-        render_state.graph.update_buffer(device, &self.buffer);
+        render_state.graph.update_buffers(device, &self.buffers);
     }
 
     fn render(
@@ -51,7 +51,7 @@ impl shader::Primitive for Primitive {
             encoder,
             target,
             *bounds,
-            0..self.vertex_count(),
+            // 0..self.vertex_count(),
         );
     }
 }

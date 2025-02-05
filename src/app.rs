@@ -23,8 +23,13 @@ struct App {
 
 impl Default for App {
     fn default() -> Self {
+        let mut plotter = Plotter::new();
+        for _ in 0..AMOUNT {
+            plotter.add_element("x");
+        }
+
         App {
-            plotter: Plotter::new(),
+            plotter,
             inputs: vec!["".to_string(); AMOUNT],
         }
     }
@@ -41,7 +46,7 @@ fn update(app: &mut App, message: Message) -> impl Into<Task<Message>> {
         },
 
         Message::UpdateExpr(index) => {
-            // app.plotter.update_expr(&app.input);
+            app.plotter.update_expr(&app.inputs[index], index);
         },
     }
     

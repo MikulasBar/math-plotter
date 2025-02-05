@@ -29,15 +29,29 @@ impl Plotter {
         Plotter::default()
     }
 
+    pub fn add_element(&mut self, input: &str) {
+        match Expr::parse(input) {
+            Ok(func) => {
+                self.scene.elements.push(func);
+                self.status = Status::all_good();
+            },
+
+            Err(err) => {
+                let msg = format!("{:?}", err);
+                self.status = Status::bad(msg);
+            },
+        }
+    }
+
     pub fn update_view(&mut self, offset: glam::Vec2, zoom: f32) {
         self.scene.offset = offset;
         self.scene.zoom = zoom;
     }
 
-    pub fn update_expr(&mut self, input: &str) {
+    pub fn update_expr(&mut self, input: &str, index: usize) {
         match Expr::parse(input) {
             Ok(func) => {
-                self.scene.func = func;
+                self.scene.elements[index] = func;
                 self.status = Status::all_good();
             },
 

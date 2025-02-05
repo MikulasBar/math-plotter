@@ -3,7 +3,7 @@ use super::helpers::*;
 
 pub struct State {
     pipeline: wgpu::RenderPipeline,
-    buffer: wgpu::Buffer,
+    buffers: Vec<wgpu::Buffer>,
     color_group: wgpu::BindGroup,
 }
 
@@ -11,9 +11,9 @@ pub struct State {
 impl State {
     const BLUE: [u8; 4] = [0x00, 0x00, 0xFF, 0xFF];
 
-    pub fn new(device: &wgpu::Device, vertices: &[f32]) -> Self {
+    pub fn new(device: &wgpu::Device, buffers: &[Vec<f32>]) -> Self {
         let shader_module = shader_module(device, "graph:shader_module", include_str!("shaders/graph.wgsl"));
-        let buffer = buffer_init(device, "graph:buffer", BufferUsages::VERTEX, vertices);
+        let buffers = init_buffers(device, buffers);
 
         let (color_group, color_group_layout) = BindGroupBuilder::new(device, "graph:color_group")
             .add_entry(
@@ -37,7 +37,7 @@ impl State {
 
         Self {
             pipeline,
-            buffer,
+            buffers,
             color_group,
         }
     }
@@ -47,7 +47,7 @@ impl State {
         encoder: &mut wgpu::CommandEncoder,
         target: &wgpu::TextureView,
         bounds: iced::Rectangle<u32>,
-        vertex_range: std::ops::Range<u32>,
+        // vertex_range: std::ops::Range<u32>,
     ) {
         let mut render_pass = RenderPassBuilder::new()
             .label("graph:render_pass")
@@ -55,8 +55,8 @@ impl State {
             .build(encoder);
 
         render_pass.set_pipeline(&self.pipeline);
-        render_pass.set_vertex_buffer(0, self.buffer.slice(..));
         render_pass.set_bind_group(0, &self.color_group, &[]);
+        // render_pass.set_vertex_buffer(0, self.buffer.slice(..));
         render_pass.set_scissor_rect(
             bounds.x,
             bounds.y,
@@ -76,10 +76,25 @@ impl State {
             1.0
         );
 
-        render_pass.draw(vertex_range, 0..1);
+        // render_pass.draw(vertex_range, 0..1);
+
+        for buffer in &self.buffers {
+            render_pass.set_vertex_buffer(0, buffer.slice(..));
+            let vertex_count = (buffer.size() / std::mem::size_of::<[f32; 2]>() as u64) as u32;
+            render_pass.draw(0..vertex_count, 0..1);
+        }
     }
 
-    pub fn update_buffer(&mut self, device: &wgpu::Device, buffer: &[f32]) {
-        self.buffer = buffer_init(device, "graph:buffer", BufferUsages::VERTEX, buffer);
+    pub fn update_buffers(&mut self, device: &wgpu::Device, buffers: &[Vec<f32>]) {
+        self.buffers = init_buffers(device, buffers);
     }
+}
+
+fn init_buffers(device: &wgpu::Device, buffers: &[Vec<f32>]) -> Vec<wgpu::Buffer> {
+    buffers.iter()
+        .enumerate()
+        .map(|(i, b)| {
+            buffer_init(device, &format!("graph:buffer:{}", i), BufferUsages::VERTEX, b)
+        })
+        .collect()
 }

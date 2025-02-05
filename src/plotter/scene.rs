@@ -11,20 +11,24 @@ use math_lib::prelude::Expr;
 
 pub struct Scene {
     // elements: Vec<Element>,
-    pub func: Expr,
+    pub elements: Vec<Expr>,
     pub offset: Vec2,
     pub zoom: f32,
 }
 
 impl Scene {
     const RANGE: i32 = 200;
+
+    pub fn add_element(&mut self, element: Expr) {
+        self.elements.push(element);
+    }
 }
 
 impl Default for Scene {
     fn default() -> Self {
         Scene {
             // elements: vec![],
-            func: Expr::parse("sin(x)").unwrap(),
+            elements: vec![],
             offset: Vec2::ZERO,
             zoom: 1.0,
         }
@@ -49,23 +53,25 @@ impl shader::Program<Message> for Scene {
         // because when the plot is not a square, the viewport will stretch the plot
         let wh_ratio = bounds.width as f32 / bounds.height as f32;
 
-        let func = |x: f32| self.func.eval_with_variable("x", x);
-
-        // these formulas are derived from the previous commits on the main branch :D
-        let buffer: Vec<f32> = (-Self::RANGE..Self::RANGE)
-            .map(|x| x as f32)
-            .map(|x| x / range)
-            .filter_map(|x| {
-                let Ok(fx) = func((x - off_x) / self.zoom) else {return None};
-
-                let y = fx * self.zoom - off_y;
-
-                Some([x, y * wh_ratio])
-            })
-            .flatten()
+        let x_coords: Vec<f32> = (-Self::RANGE..Self::RANGE)
+            .map(|x| x as f32 / range)
             .collect();
 
-        Primitive::new(buffer)
+        let buffers: Vec<Vec<f32>> = self.elements.iter().map(|e| {
+            x_coords.iter()
+                .filter_map(|&x| {
+                    // these formulas are derived from the previous commits on the main branch :D
+                    let Ok(fx) = e.eval_with_variable("x", (x - off_x) / self.zoom) else {return None};
+
+                    let y = fx * self.zoom - off_y;
+
+                    Some([x, y * wh_ratio])
+                })
+                .flatten()
+                .collect()
+        }).collect();
+
+        Primitive::new(buffers)
     }
 
     fn update(
