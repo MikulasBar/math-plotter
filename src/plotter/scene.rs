@@ -82,10 +82,6 @@ impl shader::Program<Message> for Scene {
         // }
 
         match event {
-            // event!(KB PRESS: key) => {
-            //     return (EventStatus::Captured, Some(Message::KeyPressed(key)))
-            // },
-
             event!(MOUSE LEFT_DOWN) if cursor.is_over(bounds) => {
                 let vector = Vec2::from_point(cursor.position().unwrap());
                 *state = State::LeftButtonDown(vector);

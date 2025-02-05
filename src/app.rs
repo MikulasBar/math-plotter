@@ -1,5 +1,5 @@
 use iced::{
-    self, widget::{container, row, text_input}, Length, Task
+    self, widget::{column, container, row, text_input, Column}, Length, Task
 };
 
 use crate::{
@@ -14,16 +14,18 @@ pub fn run() -> iced::Result {
         .run()
 }
 
+const AMOUNT: usize = 4;
+
 struct App {
     plotter: Plotter,
-    input: String,
+    inputs: Vec<String>,
 }
 
 impl Default for App {
     fn default() -> Self {
         App {
             plotter: Plotter::new(),
-            input: String::new(),
+            inputs: vec!["".to_string(); AMOUNT],
         }
     }
 }
@@ -34,12 +36,12 @@ fn update(app: &mut App, message: Message) -> impl Into<Task<Message>> {
             app.plotter.update_view(offset, zoom);
         },
 
-        Message::UpdateInput(input) => {
-            app.input = input;
+        Message::UpdateInput(input, index) => {
+            app.inputs[index] = input;
         },
 
-        Message::UpdateExpr => {
-            app.plotter.update_expr(&app.input);
+        Message::UpdateExpr(index) => {
+            // app.plotter.update_expr(&app.input);
         },
     }
     
@@ -50,15 +52,21 @@ fn view(app: &App) -> iced::Element<Message> {
     const WIDTH: Length = Length::Fill;
     const HEIGHT: Length = Length::Fill;
 
+    let input_column = app.inputs.iter()
+        .enumerate()
+        .fold(Column::new(), |column, (i, input)| {
+            column.push(
+                text_input(input, input)
+                    .on_input(move |input| Message::UpdateInput(input, i))
+                    .on_submit(Message::UpdateExpr(i))
+                    .width(Length::Fill)
+            )
+        });
+
     row![
-        container(
-            text_input("Enter expression", &app.input)
-                .on_input(|input| Message::UpdateInput(input))
-                .on_submit(Message::UpdateExpr)
-                .width(Length::Fill)
-        )
-        .padding(50.0)
-        .center(Length::Fill),
+        input_column
+            .spacing(10)
+            .padding(50.0),
 
         container(
             app.plotter.with_size(WIDTH, HEIGHT)

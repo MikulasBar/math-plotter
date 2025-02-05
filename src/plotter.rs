@@ -99,7 +99,6 @@ struct Status {
     pub color: Color,
 }
 
-
 impl Default for Status {
     fn default() -> Self {
         Status::all_good()
@@ -119,5 +118,5 @@ impl Status {
             msg: msg,
             color: Color::from_rgb8(255, 0, 0),
         }
-    } 
+    }
 }

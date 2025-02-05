@@ -60,7 +60,7 @@ impl State {
         render_pass.set_scissor_rect(
             bounds.x,
             bounds.y,
-            bounds.width, 
+            bounds.width,
             bounds.height
         );
 
