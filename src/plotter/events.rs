@@ -1,17 +1,9 @@
-// #[rustfmt::skip]
-// use iced::{
-//     self,
-//     Point,
-//     mouse::{self, Button as MouseButton, Event as MouseEvent, ScrollDelta},
-//     widget::canvas::{Event as CanvasEvent},
-// };
+// pub use iced::widget::shader::Event as ShaderEvent;
+// pub use iced::keyboard::Event as KeyboardEvent;
+pub use iced::mouse::Event as MouseEvent;
+pub use iced::mouse::Button as MouseButton;
 
-// #[rustfmt::skip]
-// use crate::{
-//     plotter::view::View,
-// };
 
-#[macro_export]
 macro_rules! mouse_event {
     (MOVE: $point:ident) => {
         MouseEvent::CursorMoved {
@@ -31,12 +23,33 @@ macro_rules! mouse_event {
     };
 }
 
-#[macro_export]
+// macro_rules! keyboard_event {
+//     (PRESS: $key:ident) => {
+//         KeyboardEvent::KeyPressed {
+//             key: $key,
+//             ..
+//         }
+//     };
+// }
+
+
 macro_rules! event {
     (MOUSE $($tt:tt)*) => {
-        CanvasEvent::Mouse(
+        ShaderEvent::Mouse(
             mouse_event!($($tt)*)
+        )
+    };
+
+    (KB $($tt:tt)*) => {
+        ShaderEvent::Keyboard(
+            keyboard_event!($($tt)*)
         )
     };
 }
 
+
+pub(super) use {
+    event,
+    mouse_event,
+    // keyboard_event,
+};
