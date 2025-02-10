@@ -1,9 +1,7 @@
 
-use crate::plotter::view::View;
-
 #[derive(Debug, Clone)]
 pub enum Message {
-    UpdateView(View),
-    InputChanged(String),
-    InputSubmitted,
+    UpdateView(glam::Vec2, f32),
+    UpdateInput(String),
+    UpdateExpr,
 }

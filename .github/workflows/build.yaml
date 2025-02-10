@@ -22,14 +22,18 @@ jobs:
     
     steps: 
       - name: Checkout code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1.0.6
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           target: ${{ matrix.config.target }}
           override: true
+
+      - name: Update package index (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
