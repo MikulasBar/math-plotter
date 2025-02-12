@@ -1,5 +1,5 @@
 use iced::{
-    self, widget::{column, container, row, text_input, Column}, Length, Task
+    self, widget::{button, container, row, stack, text_input, Column}, Alignment, Length, Task
 };
 
 use crate::{
@@ -14,8 +14,6 @@ pub fn run() -> iced::Result {
         .run()
 }
 
-const AMOUNT: usize = 4;
-
 struct App {
     plotter: Plotter,
     inputs: Vec<String>,
@@ -23,14 +21,11 @@ struct App {
 
 impl Default for App {
     fn default() -> Self {
-        let mut plotter = Plotter::new();
-        for _ in 0..AMOUNT {
-            plotter.add_element("x");
-        }
+        let plotter = Plotter::new();
 
         App {
             plotter,
-            inputs: vec!["".to_string(); AMOUNT],
+            inputs: vec![],
         }
     }
 }
@@ -48,13 +43,18 @@ fn update(app: &mut App, message: Message) -> impl Into<Task<Message>> {
         Message::UpdateExpr(index) => {
             app.plotter.update_expr(&app.inputs[index], index);
         },
+
+        Message::AddInput => {
+            app.plotter.add_element("");
+            app.inputs.push("".to_string());
+        },
     }
     
     Task::none()
 }
 
 fn view(app: &App) -> iced::Element<Message> {
-    const WIDTH: Length = Length::Fill;
+    const WIDTH: Length = Length::FillPortion(1);
     const HEIGHT: Length = Length::Fill;
 
     let input_column = app.inputs.iter()
@@ -67,16 +67,34 @@ fn view(app: &App) -> iced::Element<Message> {
                     .width(Length::Fill)
             )
         });
+    
+    stack!(
+        row![
+            input_column
+                .width(Length::FillPortion(1))
+                .spacing(10)
+                .padding(50.0),
+    
+            container(
+                app.plotter.with_size(WIDTH, HEIGHT)
+            )
+            .align_right(Length::Fill)
+        ],
+        add_button()
+    )
+    .into()
+}
 
-    row![
-        input_column
-            .spacing(10)
-            .padding(50.0),
 
-        container(
-            app.plotter.with_size(WIDTH, HEIGHT)
-        )
-        .align_right(Length::Fill)
-    ]
+fn add_button<'a>() -> iced::Element<'a, Message> {
+    container(
+        button("Add")
+            .on_press(Message::AddInput)
+    )
+    .padding(10.0)
+    .align_x(Alignment::Start)
+    .align_y(Alignment::Start)
+    .width(Length::Fill)
+    .height(Length::Fill)
     .into()
 }

@@ -30,9 +30,15 @@ impl Plotter {
     }
 
     pub fn add_element(&mut self, input: &str) {
+        // if the input is empty, we dont want to render anything
+        if input.is_empty() {
+            self.scene.elements.push(None);
+            return;
+        }
+
         match Expr::parse(input, true) {
             Ok(func) => {
-                self.scene.elements.push(func);
+                self.scene.elements.push(Some(func));
                 self.status = Status::all_good();
             },
 
@@ -49,9 +55,15 @@ impl Plotter {
     }
 
     pub fn update_expr(&mut self, input: &str, index: usize) {
+        if input.is_empty() {
+            self.scene.elements[index] = None;
+            println!("TEST");
+            return;
+        }
+
         match Expr::parse(input, true) {
             Ok(func) => {
-                self.scene.elements[index] = func;
+                self.scene.elements[index] = Some(func);
                 self.status = Status::all_good();
             },
 

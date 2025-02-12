@@ -11,23 +11,18 @@ use pemel::prelude::Expr;
 
 pub struct Scene {
     // elements: Vec<Element>,
-    pub elements: Vec<Expr>,
+    pub elements: Vec<Option<Expr>>,
     pub offset: Vec2,
     pub zoom: f32,
 }
 
 impl Scene {
     const RANGE: i32 = 200;
-
-    pub fn add_element(&mut self, element: Expr) {
-        self.elements.push(element);
-    }
 }
 
 impl Default for Scene {
     fn default() -> Self {
         Scene {
-            // elements: vec![],
             elements: vec![],
             offset: Vec2::ZERO,
             zoom: 1.0,
@@ -57,18 +52,20 @@ impl shader::Program<Message> for Scene {
             .map(|x| x as f32 / range)
             .collect();
 
-        let buffers: Vec<Vec<f32>> = self.elements.iter().map(|e| {
-            x_coords.iter()
-                .filter_map(|&x| {
-                    // these formulas are derived from the previous commits on the main branch :D
-                    let Ok(fx) = e.eval_with_var("x", (x - off_x) / self.zoom) else {return None};
+        let buffers: Vec<Vec<f32>> = self.elements.iter().filter_map(|e| {
+            let Some(e) = e else {return None};
+            let points = x_coords.iter().filter_map(|&x| {
+                // these formulas are derived from the previous commits on the main branch :D
+                let Ok(fx) = e.eval_with_var("x", (x - off_x) / self.zoom) else {return None};
 
-                    let y = fx * self.zoom - off_y;
+                let y = fx * self.zoom - off_y;
 
-                    Some([x, y * wh_ratio])
-                })
-                .flatten()
-                .collect()
+                Some([x, y * wh_ratio])
+            })
+            .flatten()
+            .collect();
+
+            Some(points)
         }).collect();
 
         Primitive::new(buffers)

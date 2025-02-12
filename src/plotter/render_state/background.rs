@@ -16,7 +16,7 @@ pub struct State {
 
 impl State {
     const DEFAULT_COLOR: [u8; 4] = [0x36, 0x39, 0x3F, 0xFF];
-    const BLUE: [u8; 4] = [0x00, 0x00, 0xFF, 0xFF];
+    // const BLUE: [u8; 4] = [0x00, 0x00, 0xFF, 0xFF];
     // const BLACK: [u8; 4] = [0x00, 0x00, 0x00, 0xFF];
     const POINTS: [f32; 8] = [-1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0];
 

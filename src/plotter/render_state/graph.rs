@@ -9,7 +9,7 @@ pub struct State {
 
 
 impl State {
-    const BLUE: [u8; 4] = [0x00, 0x00, 0xFF, 0xFF];
+    // const BLUE: [u8; 4] = [0x00, 0x00, 0xFF, 0xFF];
     const COLORS: &[[f32; 4]] = &[
         [0.0, 0.0, 1.0, 1.0], // Blue
         [0.0, 1.0, 0.0, 1.0], // Green
@@ -47,7 +47,6 @@ impl State {
         encoder: &mut wgpu::CommandEncoder,
         target: &wgpu::TextureView,
         bounds: iced::Rectangle<u32>,
-        // vertex_range: std::ops::Range<u32>,
     ) {
         let mut render_pass = RenderPassBuilder::new()
             .label("graph:render_pass")
@@ -75,8 +74,7 @@ impl State {
             1.0
         );
 
-        // render_pass.draw(vertex_range, 0..1);
-
+        println!("Buffers count {}", self.buffers.len());
         for i in 0..self.buffers.len() {
             let buffer = &self.buffers[i];
             render_pass.set_bind_group(0, &self.config_groups[i], &[]);
@@ -88,6 +86,7 @@ impl State {
 
     pub fn update_buffers(&mut self, device: &wgpu::Device, buffers: &[Vec<f32>]) {
         self.buffers = init_buffers(device, buffers);
+        self.config_groups = init_config_groups(device, buffers.len()).0;
     }
 }
 
@@ -95,6 +94,7 @@ fn init_buffers(device: &wgpu::Device, buffers: &[Vec<f32>]) -> Vec<wgpu::Buffer
     buffers.iter()
         .enumerate()
         .map(|(i, b)| {
+            // println!("Creating buffer {}", i);
             buffer_init(device, &format!("graph:buffer:{}", i), BufferUsages::VERTEX, b)
         })
         .collect()
@@ -102,17 +102,30 @@ fn init_buffers(device: &wgpu::Device, buffers: &[Vec<f32>]) -> Vec<wgpu::Buffer
 
 fn init_config_groups(device: &wgpu::Device, count: usize) -> (Vec<wgpu::BindGroup>, wgpu::BindGroupLayout) {
     let mut groups = vec![];
-    let mut layout = None;
+
+    let layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        label: Some("graph:config_group_layout"),
+        entries: &[wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        }],
+    });
 
     for i in 0..count {
+        // println!("Creating config group {}", i);
         let color_buffer = buffer_init(device, &format!("graph:config_group:color:{}", i), BufferUsages::UNIFORM | BufferUsages::COPY_DST, &State::COLORS[i % State::COLORS.len()]);
-        let (config_group, config_group_layout) = BindGroupBuilder::new(device, &format!("graph:config_group:{}", i))
+        let (config_group, _) = BindGroupBuilder::new(device, &format!("graph:config_group:{}", i))
             .add_entry(0, ShaderStages::FRAGMENT, None, color_buffer)
             .build();
 
         groups.push(config_group);
-        layout.get_or_insert(config_group_layout);
     }
     
-    (groups, layout.unwrap())
+    (groups, layout)
 }
