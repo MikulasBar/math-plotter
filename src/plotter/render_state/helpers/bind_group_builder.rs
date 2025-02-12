@@ -1,7 +1,6 @@
-use bytemuck::NoUninit;
 use iced::widget::shader::wgpu::{
     self, BindGroup, BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BindingType, Buffer,
-    BufferBindingType, BufferUsages, Device, ShaderStages,
+    BufferBindingType, Device, ShaderStages,
 };
 
 pub struct BindGroupBuilder<'a> {
@@ -24,18 +23,13 @@ impl<'a> BindGroupBuilder<'a> {
         }
     }
 
-    pub fn add_entry<T>(
+    pub fn add_entry(
         mut self,
-        label: &'a str,
         binding: u32,
-        usage: BufferUsages,
         visibility: ShaderStages,
         count: Option<u32>,
-        contents: &'a [T],
-    ) -> Self
-    where
-        T: NoUninit,
-    {
+        buffer: Buffer,
+    ) -> Self {
         let layout = BindGroupLayoutEntry {
             binding,
             visibility,
@@ -47,7 +41,6 @@ impl<'a> BindGroupBuilder<'a> {
             count: count.map(|c| c.try_into().unwrap()),
         };
 
-        let buffer = super::buffer_init(&self.device, label, usage, contents);
         let entry_holder = EntryHolder { binding, buffer };
 
         self.layout_entries.push(layout);

@@ -27,17 +27,16 @@ impl State {
             include_str!("shaders/background.wgsl"),
         );
 
-        let (color_group, color_group_layout) =
-            BindGroupBuilder::new(device, "background:color_group")
-                .add_entry(
-                    "background:color_group:color",
-                    0,
-                    BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-                    ShaderStages::FRAGMENT,
-                    None,
-                    &color_to_f32(Self::DEFAULT_COLOR),
-                )
-                .build();
+        let color_buffer = buffer_init(
+            device,
+            "background:color_group:color", 
+            BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            &color_to_f32(Self::DEFAULT_COLOR)
+        );
+
+        let (color_group, color_group_layout) = BindGroupBuilder::new(device, "background:color_group")
+            .add_entry(0, ShaderStages::FRAGMENT, None, color_buffer)
+            .build();
 
         let buffer = buffer_init(
             device,

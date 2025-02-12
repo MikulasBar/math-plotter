@@ -15,15 +15,15 @@ impl State {
         let shader_module = shader_module(device, "graph:shader_module", include_str!("shaders/graph.wgsl"));
         let buffers = init_buffers(device, buffers);
 
+        let color_buffer = buffer_init(
+            device,
+            "graph:color_group:color",
+            BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            &color_to_f32(Self::BLUE)
+        );
+
         let (color_group, color_group_layout) = BindGroupBuilder::new(device, "graph:color_group")
-            .add_entry(
-                "graph:color_group:color",
-                0,
-                BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-                ShaderStages::FRAGMENT,
-                None,
-                &color_to_f32(Self::BLUE),
-            )
+            .add_entry(0, ShaderStages::FRAGMENT, None, color_buffer)
             .build();
 
         let pipeline = PipelineBuilder::new(device)
