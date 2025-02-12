@@ -4,31 +4,31 @@ use super::helpers::*;
 pub struct State {
     pipeline: wgpu::RenderPipeline,
     buffers: Vec<wgpu::Buffer>,
-    color_group: wgpu::BindGroup,
+    config_groups: Vec<wgpu::BindGroup>,
 }
 
 
 impl State {
     const BLUE: [u8; 4] = [0x00, 0x00, 0xFF, 0xFF];
+    const COLORS: &[[f32; 4]] = &[
+        [0.0, 0.0, 1.0, 1.0], // Blue
+        [0.0, 1.0, 0.0, 1.0], // Green
+        [1.0, 0.0, 0.0, 1.0], // Red
+        [1.0, 1.0, 0.0, 1.0], // Yellow
+        [0.0, 1.0, 1.0, 1.0], // Cyan
+        [1.0, 0.0, 1.0, 1.0], // Magenta
+        [1.0, 1.0, 1.0, 1.0], // White
+        [0.5, 0.5, 0.5, 1.0], // Gray
+    ];
 
     pub fn new(device: &wgpu::Device, buffers: &[Vec<f32>]) -> Self {
         let shader_module = shader_module(device, "graph:shader_module", include_str!("shaders/graph.wgsl"));
         let buffers = init_buffers(device, buffers);
-
-        let color_buffer = buffer_init(
-            device,
-            "graph:color_group:color",
-            BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-            &color_to_f32(Self::BLUE)
-        );
-
-        let (color_group, color_group_layout) = BindGroupBuilder::new(device, "graph:color_group")
-            .add_entry(0, ShaderStages::FRAGMENT, None, color_buffer)
-            .build();
+        let (config_groups, config_group_layout) = init_config_groups(device, buffers.len());
 
         let pipeline = PipelineBuilder::new(device)
             .label("graph:pipeline")
-            .layout("graph:pipeline_layout", &[&color_group_layout])
+            .layout("graph:pipeline_layout", &[&config_group_layout])
             .vertex(&shader_module, "vs_main", &[VERTEX2D_VERTEX_LAYOUT])
             .fragment(&shader_module, "fs_main", &[Some(STANDARD_COLOR_TARGET_STATE)])
             .primitive(wgpu::PrimitiveTopology::LineStrip)
@@ -38,7 +38,7 @@ impl State {
         Self {
             pipeline,
             buffers,
-            color_group,
+            config_groups,
         }
     }
 
@@ -55,7 +55,6 @@ impl State {
             .build(encoder);
 
         render_pass.set_pipeline(&self.pipeline);
-        render_pass.set_bind_group(0, &self.color_group, &[]);
         // render_pass.set_vertex_buffer(0, self.buffer.slice(..));
         render_pass.set_scissor_rect(
             bounds.x,
@@ -78,7 +77,9 @@ impl State {
 
         // render_pass.draw(vertex_range, 0..1);
 
-        for buffer in &self.buffers {
+        for i in 0..self.buffers.len() {
+            let buffer = &self.buffers[i];
+            render_pass.set_bind_group(0, &self.config_groups[i], &[]);
             render_pass.set_vertex_buffer(0, buffer.slice(..));
             let vertex_count = (buffer.size() / std::mem::size_of::<[f32; 2]>() as u64) as u32;
             render_pass.draw(0..vertex_count, 0..1);
@@ -97,4 +98,21 @@ fn init_buffers(device: &wgpu::Device, buffers: &[Vec<f32>]) -> Vec<wgpu::Buffer
             buffer_init(device, &format!("graph:buffer:{}", i), BufferUsages::VERTEX, b)
         })
         .collect()
+}
+
+fn init_config_groups(device: &wgpu::Device, count: usize) -> (Vec<wgpu::BindGroup>, wgpu::BindGroupLayout) {
+    let mut groups = vec![];
+    let mut layout = None;
+
+    for i in 0..count {
+        let color_buffer = buffer_init(device, &format!("graph:config_group:color:{}", i), BufferUsages::UNIFORM | BufferUsages::COPY_DST, &State::COLORS[i % State::COLORS.len()]);
+        let (config_group, config_group_layout) = BindGroupBuilder::new(device, &format!("graph:config_group:{}", i))
+            .add_entry(0, ShaderStages::FRAGMENT, None, color_buffer)
+            .build();
+
+        groups.push(config_group);
+        layout.get_or_insert(config_group_layout);
+    }
+    
+    (groups, layout.unwrap())
 }

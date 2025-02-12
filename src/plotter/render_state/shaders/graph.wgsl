@@ -1,5 +1,5 @@
 
-@group(0) @binding(0) var<uniform> line_color: vec4<f32>;
+@group(0) @binding(0) var<uniform> color: vec4<f32>;
 
 @vertex
 fn vs_main(
@@ -12,5 +12,5 @@ fn vs_main(
 fn fs_main(
     @builtin(position) input: vec4<f32>,
 ) -> @location(0) vec4<f32> {
-    return line_color;
+    return color;
 }
