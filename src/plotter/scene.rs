@@ -7,7 +7,7 @@ use iced::widget::shader::{self, Event as ShaderEvent};
 use iced::{advanced, mouse};
 use iced::event::Status as EventStatus;
 use iced::mouse::ScrollDelta;
-use math_lib::prelude::Expr;
+use pemel::prelude::Expr;
 
 pub struct Scene {
     // elements: Vec<Element>,
@@ -61,7 +61,7 @@ impl shader::Program<Message> for Scene {
             x_coords.iter()
                 .filter_map(|&x| {
                     // these formulas are derived from the previous commits on the main branch :D
-                    let Ok(fx) = e.eval_with_variable("x", (x - off_x) / self.zoom) else {return None};
+                    let Ok(fx) = e.eval_with_var("x", (x - off_x) / self.zoom) else {return None};
 
                     let y = fx * self.zoom - off_y;
 

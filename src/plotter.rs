@@ -8,7 +8,7 @@ mod render_state;
 use crate::message::Message;
 use scene::Scene;
 use iced::{widget::{button, container, shader, stack, text}, Alignment, Color, Element, Length, Renderer, Theme};
-use math_lib::prelude::Expr;
+use pemel::prelude::Expr;
 
 pub struct Plotter {
     scene: Scene,
@@ -30,7 +30,7 @@ impl Plotter {
     }
 
     pub fn add_element(&mut self, input: &str) {
-        match Expr::parse(input) {
+        match Expr::parse(input, true) {
             Ok(func) => {
                 self.scene.elements.push(func);
                 self.status = Status::all_good();
@@ -49,7 +49,7 @@ impl Plotter {
     }
 
     pub fn update_expr(&mut self, input: &str, index: usize) {
-        match Expr::parse(input) {
+        match Expr::parse(input, true) {
             Ok(func) => {
                 self.scene.elements[index] = func;
                 self.status = Status::all_good();
