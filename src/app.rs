@@ -19,6 +19,7 @@ struct App {
     inputs: Vec<String>,
 }
 
+
 impl Default for App {
     fn default() -> Self {
         let plotter = Plotter::new();
@@ -55,14 +56,28 @@ fn update(app: &mut App, message: Message) -> impl Into<Task<Message>> {
         }
     }
     
-    
     Task::none()
 }
 
 fn view(app: &App) -> iced::Element<Message> {
+    row![
+        input_frame(app),
+        plot_frame(app)
+    ]
+    .into()
+}
+
+
+
+fn plot_frame<'a>(app: &'a App) -> iced::Element<'a, Message> {
     const WIDTH: Length = Length::FillPortion(1);
     const HEIGHT: Length = Length::Fill;
 
+    app.plotter.with_size(WIDTH, HEIGHT)
+        .into()
+}
+
+fn input_frame<'a>(app: &App) -> iced::Element<'a, Message> {
     let input_column = app.inputs.iter()
         .enumerate()
         .fold(Column::new(), |column, (i, input)| {
@@ -81,24 +96,17 @@ fn view(app: &App) -> iced::Element<Message> {
                 ]
             )
         });
-    
+
     stack!(
-        row![
-            input_column
-                .width(Length::FillPortion(1))
-                .spacing(10)
-                .padding(50.0),
-    
-            container(
-                app.plotter.with_size(WIDTH, HEIGHT)
-            )
-            .align_right(Length::Fill)
-        ],
+        input_column
+            .width(Length::FillPortion(1))
+            .spacing(10)
+            .padding(50.0),
+
         add_button()
     )
     .into()
 }
-
 
 fn add_button<'a>() -> iced::Element<'a, Message> {
     container(
@@ -112,3 +120,4 @@ fn add_button<'a>() -> iced::Element<'a, Message> {
     .height(Length::Fill)
     .into()
 }
+
