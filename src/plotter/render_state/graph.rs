@@ -54,7 +54,6 @@ impl State {
             .build(encoder);
 
         render_pass.set_pipeline(&self.pipeline);
-        // render_pass.set_vertex_buffer(0, self.buffer.slice(..));
         render_pass.set_scissor_rect(
             bounds.x,
             bounds.y,
@@ -74,7 +73,7 @@ impl State {
             1.0
         );
 
-        println!("Buffers count {}", self.buffers.len());
+        // println!("Buffers count {}", self.buffers.len());
         for i in 0..self.buffers.len() {
             let buffer = &self.buffers[i];
             render_pass.set_bind_group(0, &self.config_groups[i], &[]);
@@ -94,7 +93,6 @@ fn init_buffers(device: &wgpu::Device, buffers: &[Vec<f32>]) -> Vec<wgpu::Buffer
     buffers.iter()
         .enumerate()
         .map(|(i, b)| {
-            // println!("Creating buffer {}", i);
             buffer_init(device, &format!("graph:buffer:{}", i), BufferUsages::VERTEX, b)
         })
         .collect()
@@ -118,8 +116,13 @@ fn init_config_groups(device: &wgpu::Device, count: usize) -> (Vec<wgpu::BindGro
     });
 
     for i in 0..count {
-        // println!("Creating config group {}", i);
-        let color_buffer = buffer_init(device, &format!("graph:config_group:color:{}", i), BufferUsages::UNIFORM | BufferUsages::COPY_DST, &State::COLORS[i % State::COLORS.len()]);
+        let color_buffer = buffer_init(
+            device,
+            &format!("graph:config_group:color:{}", i),
+            BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            &State::COLORS[i % State::COLORS.len()]
+        );
+        
         let (config_group, _) = BindGroupBuilder::new(device, &format!("graph:config_group:{}", i))
             .add_entry(0, ShaderStages::FRAGMENT, None, color_buffer)
             .build();

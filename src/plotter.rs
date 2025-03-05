@@ -1,7 +1,6 @@
 mod primitive;
 mod events;
 mod scene;
-mod element;
 mod render_state;
 
 
@@ -49,6 +48,10 @@ impl Plotter {
         }
     }
 
+    pub fn remove_element(&mut self, index: usize) {
+        self.scene.elements.remove(index);
+    }
+
     pub fn update_view(&mut self, offset: glam::Vec2, zoom: f32) {
         self.scene.offset = offset;
         self.scene.zoom = zoom;
@@ -57,7 +60,7 @@ impl Plotter {
     pub fn update_expr(&mut self, input: &str, index: usize) {
         if input.is_empty() {
             self.scene.elements[index] = None;
-            println!("TEST");
+            // println!("TEST");
             return;
         }
 

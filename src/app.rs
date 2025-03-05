@@ -1,5 +1,5 @@
 use iced::{
-    self, widget::{button, container, row, stack, text_input, Column}, Alignment, Length, Task
+    self, widget::{button, container, row, stack, text_input, Column}, Alignment, Length, Padding, Task
 };
 
 use crate::{
@@ -48,7 +48,13 @@ fn update(app: &mut App, message: Message) -> impl Into<Task<Message>> {
             app.plotter.add_element("");
             app.inputs.push("".to_string());
         },
+
+        Message::RemoveInput(index) => {
+            app.plotter.remove_element(index);
+            app.inputs.remove(index);
+        }
     }
+    
     
     Task::none()
 }
@@ -61,10 +67,18 @@ fn view(app: &App) -> iced::Element<Message> {
         .enumerate()
         .fold(Column::new(), |column, (i, input)| {
             column.push(
-                text_input(input, input)
-                    .on_input(move |input| Message::UpdateInput(input, i))
-                    .on_submit(Message::UpdateExpr(i))
-                    .width(Length::Fill)
+                row![
+                    text_input(input, input)
+                        .on_input(move |input| Message::UpdateInput(input, i))
+                        .on_submit(Message::UpdateExpr(i))
+                        .width(Length::Fill),
+
+                    container(
+                        button("X")
+                            .on_press(Message::RemoveInput(i))
+                    )
+                    .padding(Padding::new(0.0).left(10.0))
+                ]
             )
         });
     
