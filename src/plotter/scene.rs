@@ -68,7 +68,7 @@ impl shader::Program<Message> for Scene {
             Some(points)
         }).collect();
 
-        Primitive::new(buffers)
+        Primitive::new(buffers, self.offset)
     }
 
     fn update(

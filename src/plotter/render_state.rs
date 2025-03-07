@@ -3,6 +3,7 @@ mod background;
 mod axis;
 mod helpers;
 
+use glam::Vec2;
 use iced::widget::shader::wgpu::{self};
 
 pub struct RenderState {
@@ -13,10 +14,10 @@ pub struct RenderState {
 
 
 impl RenderState {
-    pub fn new(device: &wgpu::Device, buffers: &[Vec<f32>]) -> Self {
+    pub fn new(device: &wgpu::Device, buffers: &[Vec<f32>], offset: Vec2) -> Self {
         let background = background::State::new(device);
         let graph = graph::State::new(device, buffers);
-        let axis = axis::State::new(device);
+        let axis = axis::State::new(device, offset);
 
         Self {
             background,
@@ -34,6 +35,11 @@ impl RenderState {
         self.background.render(encoder, target, bounds);
         self.axis.render(encoder, target, bounds);
         self.graph.render(encoder, target, bounds);
+    }
+
+    pub fn update_data(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, buffers: &[Vec<f32>], offset: Vec2) {
+        self.graph.update_buffers(device, buffers);
+        self.axis.update_offset(queue, offset);
     }
 }
 

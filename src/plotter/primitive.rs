@@ -1,41 +1,40 @@
+use glam::Vec2;
 use iced::widget::shader::{self};
 use iced::advanced::graphics::Viewport;
 use super::render_state::RenderState;
 #[derive(Clone, Debug)]
 pub struct Primitive {
     buffers: Vec<Vec<f32>>,
+    offset: glam::Vec2,
 }
 
 impl Primitive {
-    pub fn new(buffers: Vec<Vec<f32>>) -> Self {
+    pub fn new(buffers: Vec<Vec<f32>>, offset: Vec2) -> Self {
         Primitive {
             buffers,
+            offset,
         }
     }
-
-    // fn vertex_count(&self, ) -> u32 {
-    //     self.buffer.len() as u32 / 2
-    // }
 }
 
 impl shader::Primitive for Primitive {
     fn prepare(
         &self,
         device: &shader::wgpu::Device,
-        _queue: &shader::wgpu::Queue,
+        queue: &shader::wgpu::Queue,
         _format: shader::wgpu::TextureFormat,
         storage: &mut shader::Storage,
         _bounds: &iced::Rectangle,
         _viewport: &Viewport,
     ) {
         if !storage.has::<RenderState>() {
-            let render_state = RenderState::new(device, &self.buffers);
+            let render_state = RenderState::new(device, &self.buffers, self.offset);
             storage.store(render_state);
             return;
         }
 
         let render_state = storage.get_mut::<RenderState>().unwrap();
-        render_state.graph.update_buffers(device, &self.buffers);
+        render_state.update_data(device, queue, &self.buffers, self.offset);
     }
 
     fn render(

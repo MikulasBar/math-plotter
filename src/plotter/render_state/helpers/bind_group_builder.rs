@@ -10,7 +10,7 @@ pub struct BindGroupBuilder<'a> {
 
     // This is a temporary storage for bindgroup entries
     // we cannot use Vec<BindGroupEntry> because it will complain about lifetimes
-    entry_holders: Vec<EntryHolder>,
+    entry_holders: Vec<EntryHolder<'a>>,
 }
 
 impl<'a> BindGroupBuilder<'a> {
@@ -28,7 +28,7 @@ impl<'a> BindGroupBuilder<'a> {
         binding: u32,
         visibility: ShaderStages,
         count: Option<u32>,
-        buffer: Buffer,
+        buffer: &'a Buffer,
     ) -> Self {
         let layout = BindGroupLayoutEntry {
             binding,
@@ -80,7 +80,7 @@ impl<'a> BindGroupBuilder<'a> {
     }
 }
 
-struct EntryHolder {
+struct EntryHolder<'a> {
     pub binding: u32,
-    pub buffer: Buffer,
+    pub buffer: &'a Buffer,
 }

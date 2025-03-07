@@ -35,7 +35,7 @@ impl State {
         );
 
         let (color_group, color_group_layout) = BindGroupBuilder::new(device, "background:color_group")
-            .add_entry(0, ShaderStages::FRAGMENT, None, color_buffer)
+            .add_entry(0, ShaderStages::FRAGMENT, None, &color_buffer)
             .build();
 
         let buffer = buffer_init(

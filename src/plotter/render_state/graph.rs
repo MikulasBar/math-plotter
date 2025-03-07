@@ -124,7 +124,7 @@ fn init_config_groups(device: &wgpu::Device, count: usize) -> (Vec<wgpu::BindGro
         );
         
         let (config_group, _) = BindGroupBuilder::new(device, &format!("graph:config_group:{}", i))
-            .add_entry(0, ShaderStages::FRAGMENT, None, color_buffer)
+            .add_entry(0, ShaderStages::FRAGMENT, None, &color_buffer)
             .build();
 
         groups.push(config_group);
