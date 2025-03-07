@@ -1,5 +1,5 @@
 use iced::{
-    self, widget::{button, container, row, stack, text_input, Column}, Alignment, Length, Padding, Task
+    self, widget::{self, button, scrollable, container, row, stack, text_input, Column}, Alignment, Length, Padding, Task
 };
 
 use crate::{
@@ -95,14 +95,18 @@ fn input_frame<'a>(app: &App) -> iced::Element<'a, Message> {
                     .padding(Padding::new(0.0).left(10.0))
                 ]
             )
-        });
+        })
+        .width(Length::FillPortion(1))
+        .spacing(10)
+        .padding(50.0);
+
+    let scrollable = widget::scrollable(input_column)
+        .direction(scrollable::Direction::Vertical(
+            scrollable::Scrollbar::new()
+        ));
 
     stack!(
-        input_column
-            .width(Length::FillPortion(1))
-            .spacing(10)
-            .padding(50.0),
-
+        scrollable,
         add_button()
     )
     .into()
