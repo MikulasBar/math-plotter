@@ -94,6 +94,7 @@ impl State {
         let scale_x = 2.0 / bounds.width;
         let scale_y = 2.0 / bounds.height;
         let offset_data = [offset.x * scale_x, -offset.y * scale_y];
+        
         queue.write_buffer(&self.offset_buffer, 0, bytemuck::cast_slice(&offset_data));
     }
 }
