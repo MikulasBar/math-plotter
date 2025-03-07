@@ -37,9 +37,9 @@ impl RenderState {
         self.graph.render(encoder, target, bounds);
     }
 
-    pub fn update_data(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, buffers: &[Vec<f32>], offset: Vec2) {
+    pub fn update_data(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, bounds: &iced::Rectangle<f32>, buffers: &[Vec<f32>], offset: Vec2) {
         self.graph.update_buffers(device, buffers);
-        self.axis.update_offset(queue, offset);
+        self.axis.update_offset(queue, bounds, offset);
     }
 }
 

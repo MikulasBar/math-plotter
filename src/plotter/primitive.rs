@@ -24,7 +24,7 @@ impl shader::Primitive for Primitive {
         queue: &shader::wgpu::Queue,
         _format: shader::wgpu::TextureFormat,
         storage: &mut shader::Storage,
-        _bounds: &iced::Rectangle,
+        bounds: &iced::Rectangle,
         _viewport: &Viewport,
     ) {
         if !storage.has::<RenderState>() {
@@ -34,7 +34,7 @@ impl shader::Primitive for Primitive {
         }
 
         let render_state = storage.get_mut::<RenderState>().unwrap();
-        render_state.update_data(device, queue, &self.buffers, self.offset);
+        render_state.update_data(device, queue, bounds, &self.buffers, self.offset);
     }
 
     fn render(

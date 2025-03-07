@@ -90,8 +90,10 @@ impl State {
         render_pass.draw(0..4, 0..1);
     }
 
-    pub fn update_offset(&mut self, queue: &Queue, offset: Vec2) {
-        let offset_data = [offset.x, offset.y];
+    pub fn update_offset(&mut self, queue: &Queue, bounds: &iced::Rectangle<f32>, offset: Vec2) {
+        let scale_x = 2.0 / bounds.width;
+        let scale_y = 2.0 / bounds.height;
+        let offset_data = [offset.x * scale_x, -offset.y * scale_y];
         queue.write_buffer(&self.offset_buffer, 0, bytemuck::cast_slice(&offset_data));
     }
 }
