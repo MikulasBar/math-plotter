@@ -10,7 +10,6 @@ use iced::mouse::ScrollDelta;
 use pemel::prelude::Expr;
 
 pub struct Scene {
-    // elements: Vec<Element>,
     pub elements: Vec<Option<Expr>>,
     pub offset: Vec2,
     pub zoom: f32,
@@ -62,8 +61,11 @@ impl Scene {
 
     fn compute_axises(&self, bounds: iced::Rectangle) -> Vec<f32> {
         let off_x = 2.0 * self.offset.x / bounds.width;
-        // y is calculated with width too, because the graphs have the square aspect ratio 
-        let off_y = 2.0 * self.offset.y / bounds.width;
+        // y is calculated with width too, because the graphs have the square aspect ratio
+        // and also we need to use the same scale ratio
+        let off_y = 2.0 * self.offset.y / bounds.height;
+        let wh_ratio = bounds.width / bounds.height;
+        let off_y = off_y * wh_ratio;
 
         let x_axis = [-1.0, -off_y, 1.0, -off_y]; // y offset is inverted
         let y_axis = [off_x, -1.0, off_x, 1.0];
