@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 iced = { version = "0.13.1", features = ["debug", "advanced"] }
-pemel = "0.2.0"
+pemel = "0.2.1"
 glam = "0.29.0"
 bytemuck = "1.18.0"

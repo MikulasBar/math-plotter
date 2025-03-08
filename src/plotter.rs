@@ -60,7 +60,6 @@ impl Plotter {
     pub fn update_expr(&mut self, input: &str, index: usize) {
         if input.is_empty() {
             self.scene.elements[index] = None;
-            // println!("TEST");
             return;
         }
 

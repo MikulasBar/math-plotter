@@ -2269,9 +2269,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pemel"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c248a480190a48329461d5bde6da2a159c8b992b55678b932895e98e4199167"
+checksum = "1d2e00bd1df396fe9b3cfbac361e62933d6ef65d209b0fe71641d02ca1bba427"
 
 [[package]]
 name = "percent-encoding"
