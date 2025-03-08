@@ -16,9 +16,6 @@ pub struct Scene {
     pub zoom: f32,
 }
 
-impl Scene {
-    const RANGE: i32 = 200;
-}
 
 impl Default for Scene {
     fn default() -> Self {
@@ -30,16 +27,10 @@ impl Default for Scene {
     }
 }
 
-impl shader::Program<Message> for Scene {
-    type State = State;
-    type Primitive = Primitive;
+impl Scene {
+    const RANGE: i32 = 200;
 
-    fn draw(
-        &self,
-        _state: &Self::State,
-        _cursor: mouse::Cursor,
-        bounds: iced::Rectangle,
-    ) -> Self::Primitive {
+    pub fn compute_graphs(&self, bounds: iced::Rectangle) -> Vec<Vec<f32>> {
         let range = Self::RANGE as f32;
 
         let off_x = 2.0 * self.offset.x / bounds.width as f32;
@@ -52,7 +43,7 @@ impl shader::Program<Message> for Scene {
             .map(|x| x as f32 / range)
             .collect();
 
-        let buffers: Vec<Vec<f32>> = self.elements.iter().filter_map(|e| {
+        self.elements.iter().filter_map(|e| {
             let Some(e) = e else {return None};
             let points = x_coords.iter().filter_map(|&x| {
                 // these formulas are derived from the previous commits on the main branch :D
@@ -66,9 +57,35 @@ impl shader::Program<Message> for Scene {
             .collect();
 
             Some(points)
-        }).collect();
+        }).collect()
+    }
 
-        Primitive::new(buffers, self.offset)
+    fn compute_axises(&self, bounds: iced::Rectangle) -> Vec<f32> {
+        let off_x = 2.0 * self.offset.x / bounds.width;
+        // y is calculated with width too, because the graphs have the square aspect ratio 
+        let off_y = 2.0 * self.offset.y / bounds.width;
+
+        let x_axis = [-1.0, -off_y, 1.0, -off_y]; // y offset is inverted
+        let y_axis = [off_x, -1.0, off_x, 1.0];
+
+        [x_axis, y_axis].concat()
+    }
+}
+
+impl shader::Program<Message> for Scene {
+    type State = State;
+    type Primitive = Primitive;
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        _cursor: mouse::Cursor,
+        bounds: iced::Rectangle,
+    ) -> Self::Primitive {
+        let graphs = self.compute_graphs(bounds);
+        let axises = self.compute_axises(bounds);
+
+        Primitive::new(graphs, axises)
     }
 
     fn update(

@@ -1,10 +1,9 @@
-mod graph;
-mod background;
 mod axis;
+mod background;
+mod graph;
 mod helpers;
 
-use glam::Vec2;
-use iced::widget::shader::wgpu::{self};
+use iced::widget::shader::wgpu;
 
 pub struct RenderState {
     pub background: background::State,
@@ -12,12 +11,11 @@ pub struct RenderState {
     pub axis: axis::State,
 }
 
-
 impl RenderState {
-    pub fn new(device: &wgpu::Device, buffers: &[Vec<f32>], offset: Vec2) -> Self {
+    pub fn new(device: &wgpu::Device, graphs: &[Vec<f32>], axises: &[f32]) -> Self {
         let background = background::State::new(device);
-        let graph = graph::State::new(device, buffers);
-        let axis = axis::State::new(device, offset);
+        let graph = graph::State::new(device, graphs);
+        let axis = axis::State::new(device, axises);
 
         Self {
             background,
@@ -25,21 +23,26 @@ impl RenderState {
             axis,
         }
     }
-    
+
     pub fn render(
-        &self, 
-        encoder: &mut wgpu::CommandEncoder, 
-        target: &wgpu::TextureView, 
-        bounds: iced::Rectangle<u32>
+        &self,
+        encoder: &mut wgpu::CommandEncoder,
+        target: &wgpu::TextureView,
+        bounds: iced::Rectangle<u32>,
     ) {
         self.background.render(encoder, target, bounds);
         self.axis.render(encoder, target, bounds);
         self.graph.render(encoder, target, bounds);
     }
 
-    pub fn update_data(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, bounds: &iced::Rectangle<f32>, buffers: &[Vec<f32>], offset: Vec2) {
+    pub fn update_data(
+        &mut self,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        buffers: &[Vec<f32>],
+        axises: &[f32],
+    ) {
+        self.axis.update_buffers(queue, axises);
         self.graph.update_buffers(device, queue, buffers);
-        self.axis.update_offset(queue, bounds, offset);
     }
 }
-

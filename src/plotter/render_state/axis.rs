@@ -1,33 +1,31 @@
-use glam::Vec2;
-use iced::widget::shader::wgpu::{self, BufferUsages, Device, LoadOp, Queue, ShaderStages, StoreOp};
+use iced::widget::shader::wgpu::{
+    self, BufferUsages, Device, LoadOp, Queue, ShaderStages, StoreOp,
+};
 
 use super::helpers::*;
 
 pub struct State {
     pipeline: wgpu::RenderPipeline,
     buffer: wgpu::Buffer,
-    offset_buffer: wgpu::Buffer,
     config_group: wgpu::BindGroup,
 }
 
 impl State {
-    const POINTS: [f32; 8] = [-1.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, 1.0];
+    // const POINTS: [f32; 8] = [-1.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, 1.0];
     const COLOR: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
 
-    pub fn new(device: &Device, offset: Vec2) -> Self {
+    pub fn new(device: &Device, axises: &[f32]) -> Self {
         let shader_module = super::helpers::shader_module(
             device,
             "axis:shader_module",
             include_str!("shaders/axis.wgsl"),
         );
 
-        let buffer = buffer_init(device, "axis:buffer", BufferUsages::VERTEX, &Self::POINTS);
-
-        let offset_buffer = buffer_init(
+        let buffer = buffer_init(
             device,
-            "axis:offset_buffer",
-            BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-            &[offset.x, offset.y],
+            "axis:buffer",
+            BufferUsages::VERTEX | BufferUsages::COPY_DST,
+            &axises,
         );
 
         let color_buffer = buffer_init(
@@ -39,8 +37,7 @@ impl State {
 
         let (config_group, config_group_layout) =
             BindGroupBuilder::new(device, "axis:config_group")
-                .add_entry(0, ShaderStages::VERTEX, None, &offset_buffer)
-                .add_entry(1, ShaderStages::FRAGMENT, None, &color_buffer)
+                .add_entry(0, ShaderStages::FRAGMENT, None, &color_buffer)
                 .build();
 
         let pipeline = PipelineBuilder::new(device)
@@ -59,7 +56,6 @@ impl State {
         Self {
             pipeline,
             buffer,
-            offset_buffer,
             config_group,
         }
     }
@@ -90,11 +86,7 @@ impl State {
         render_pass.draw(0..4, 0..1);
     }
 
-    pub fn update_offset(&mut self, queue: &Queue, bounds: &iced::Rectangle<f32>, offset: Vec2) {
-        let scale_x = 2.0 / bounds.width;
-        let scale_y = 2.0 / bounds.height;
-        let offset_data = [offset.x * scale_x, -offset.y * scale_y];
-        
-        queue.write_buffer(&self.offset_buffer, 0, bytemuck::cast_slice(&offset_data));
+    pub fn update_buffers(&mut self, queue: &Queue, axises: &[f32]) {
+        queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(axises));
     }
 }
