@@ -11,7 +11,6 @@ pub struct RenderPassBuilder<'a> {
     occlusion_query_set: Option<&'a wgpu::QuerySet>,
 }
 
-
 impl<'a> RenderPassBuilder<'a> {
     pub fn new() -> Self {
         Self {

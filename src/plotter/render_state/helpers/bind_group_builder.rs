@@ -1,9 +1,7 @@
-use bytemuck::NoUninit;
 use iced::widget::shader::wgpu::{
     self, BindGroup, BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BindingType, Buffer,
-    BufferBindingType, BufferUsages, Device, ShaderStages,
+    BufferBindingType, Device, ShaderStages,
 };
-
 
 pub struct BindGroupBuilder<'a> {
     device: &'a Device,
@@ -12,7 +10,7 @@ pub struct BindGroupBuilder<'a> {
 
     // This is a temporary storage for bindgroup entries
     // we cannot use Vec<BindGroupEntry> because it will complain about lifetimes
-    entry_holders: Vec<EntryHolder>,
+    entry_holders: Vec<EntryHolder<'a>>,
 }
 
 impl<'a> BindGroupBuilder<'a> {
@@ -25,18 +23,13 @@ impl<'a> BindGroupBuilder<'a> {
         }
     }
 
-    pub fn add_entry<T>(
+    pub fn add_entry(
         mut self,
-        label: &'a str,
         binding: u32,
-        usage: BufferUsages,
         visibility: ShaderStages,
         count: Option<u32>,
-        contents: &'a [T],
-    ) -> Self
-    where
-        T: NoUninit,
-    {
+        buffer: &'a Buffer,
+    ) -> Self {
         let layout = BindGroupLayoutEntry {
             binding,
             visibility,
@@ -48,7 +41,6 @@ impl<'a> BindGroupBuilder<'a> {
             count: count.map(|c| c.try_into().unwrap()),
         };
 
-        let buffer = super::buffer_init(&self.device, label, usage, contents);
         let entry_holder = EntryHolder { binding, buffer };
 
         self.layout_entries.push(layout);
@@ -88,7 +80,7 @@ impl<'a> BindGroupBuilder<'a> {
     }
 }
 
-struct EntryHolder {
+struct EntryHolder<'a> {
     pub binding: u32,
-    pub buffer: Buffer,
+    pub buffer: &'a Buffer,
 }

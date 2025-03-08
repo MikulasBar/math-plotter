@@ -3,6 +3,7 @@ use iced::widget::shader::wgpu::{
     self, BufferUsages, Device, LoadOp, PrimitiveTopology, ShaderStages, StoreOp,
 };
 
+
 // We need to render background manually.
 // LoadOp::Clear cleares the whole screen no matter how the viewport is set.
 // So we need to draw a rectangle with the background color. 
@@ -15,7 +16,7 @@ pub struct State {
 
 impl State {
     const DEFAULT_COLOR: [u8; 4] = [0x36, 0x39, 0x3F, 0xFF];
-    const BLUE: [u8; 4] = [0x00, 0x00, 0xFF, 0xFF];
+    // const BLUE: [u8; 4] = [0x00, 0x00, 0xFF, 0xFF];
     // const BLACK: [u8; 4] = [0x00, 0x00, 0x00, 0xFF];
     const POINTS: [f32; 8] = [-1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0];
 
@@ -26,17 +27,16 @@ impl State {
             include_str!("shaders/background.wgsl"),
         );
 
-        let (color_group, color_group_layout) =
-            BindGroupBuilder::new(device, "background:color_group")
-                .add_entry(
-                    "background:color_group:color",
-                    0,
-                    BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-                    ShaderStages::FRAGMENT,
-                    None,
-                    &color_to_f32(Self::DEFAULT_COLOR),
-                )
-                .build();
+        let color_buffer = buffer_init(
+            device,
+            "background:color_group:color", 
+            BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            &color_to_f32(Self::DEFAULT_COLOR)
+        );
+
+        let (color_group, color_group_layout) = BindGroupBuilder::new(device, "background:color_group")
+            .add_entry(0, ShaderStages::FRAGMENT, None, &color_buffer)
+            .build();
 
         let buffer = buffer_init(
             device,

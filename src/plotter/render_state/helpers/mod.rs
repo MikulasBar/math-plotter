@@ -6,7 +6,6 @@ pub use bind_group_builder::*;
 pub use pipeline_builder::*;
 pub use render_pass_builder::*;
 
-
 use iced::widget::shader::wgpu::{
     self,
     util::{BufferInitDescriptor, DeviceExt},

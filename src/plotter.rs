@@ -1,14 +1,13 @@
 mod primitive;
 mod events;
 mod scene;
-mod element;
 mod render_state;
 
 
 use crate::message::Message;
 use scene::Scene;
 use iced::{widget::{button, container, shader, stack, text}, Alignment, Color, Element, Length, Renderer, Theme};
-use math_lib::prelude::Expr;
+use pemel::prelude::Expr;
 
 pub struct Plotter {
     scene: Scene,
@@ -29,15 +28,44 @@ impl Plotter {
         Plotter::default()
     }
 
+    pub fn add_element(&mut self, input: &str) {
+        // if the input is empty, we dont want to render anything
+        if input.is_empty() {
+            self.scene.elements.push(None);
+            return;
+        }
+
+        match Expr::parse(input, true) {
+            Ok(func) => {
+                self.scene.elements.push(Some(func));
+                self.status = Status::all_good();
+            },
+
+            Err(err) => {
+                let msg = format!("{:?}", err);
+                self.status = Status::bad(msg);
+            },
+        }
+    }
+
+    pub fn remove_element(&mut self, index: usize) {
+        self.scene.elements.remove(index);
+    }
+
     pub fn update_view(&mut self, offset: glam::Vec2, zoom: f32) {
         self.scene.offset = offset;
         self.scene.zoom = zoom;
     }
 
-    pub fn update_expr(&mut self, input: &str) {
-        match Expr::parse(input) {
+    pub fn update_expr(&mut self, input: &str, index: usize) {
+        if input.is_empty() {
+            self.scene.elements[index] = None;
+            return;
+        }
+
+        match Expr::parse(input, true) {
             Ok(func) => {
-                self.scene.func = func;
+                self.scene.elements[index] = Some(func);
                 self.status = Status::all_good();
             },
 
@@ -58,8 +86,8 @@ impl Plotter {
                 .width(width)
                 .height(height),
 
-            // home_button(),
-            // status_bar(&self.status),
+            home_button(),
+            status_bar(&self.status),
         )
         .into()
     }
@@ -99,7 +127,6 @@ struct Status {
     pub color: Color,
 }
 
-
 impl Default for Status {
     fn default() -> Self {
         Status::all_good()
@@ -119,5 +146,5 @@ impl Status {
             msg: msg,
             color: Color::from_rgb8(255, 0, 0),
         }
-    } 
+    }
 }
