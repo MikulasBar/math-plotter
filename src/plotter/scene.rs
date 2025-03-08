@@ -28,6 +28,7 @@ impl Default for Scene {
 
 impl Scene {
     const RANGE: i32 = 200;
+    const ASYMPTOTE_THRESHOLD: f32 = 50.0;
 
     pub fn compute_graphs(&self, bounds: iced::Rectangle) -> Vec<Vec<f32>> {
         let range = Self::RANGE as f32;
@@ -44,19 +45,45 @@ impl Scene {
 
         self.elements.iter().filter_map(|e| {
             let Some(e) = e else {return None};
-            let points = x_coords.iter().filter_map(|&x| {
-                // these formulas are derived from the previous commits on the main branch :D
-                let Ok(fx) = e.eval_with_var("x", (x - off_x) / self.zoom) else {return None};
+            let mut points = vec![];
+            let mut last_fx = None;
 
+            for &x in &x_coords {
+                let Ok(fx) = e.eval_with_var("x", (x - off_x) / self.zoom) else {continue};
                 let y = fx * self.zoom - off_y;
 
-                Some([x, y * wh_ratio])
-            })
-            .flatten()
-            .collect();
+                // We don't want to draw the line between the asymptotes
+                // it makes vertical lines that are not part of the graph
+                if let Some(last_fx) = last_fx {
+                    // we have first point from the previous iteration
+                    // so we need to pop it if the current point is asymptote
+                    // if not, we need to complete the point pair
+                    // this happens only if the last_fx is not None
+                    // because at the first point we need to leave only 1 point
+                    // otherwise we would have lines from point to the same point
+                    if self.is_asymptote(last_fx, fx) {
+                        points.pop();
+                        points.pop();
+                    } else {
+                        points.push(x);
+                        points.push(y * wh_ratio);
+                    }
+                }
+                
+                points.push(x);
+                points.push(y * wh_ratio);
+                last_fx = Some(fx);
+            }
 
             Some(points)
         }).collect()
+    }
+
+    fn is_asymptote(&self, last_fx: f32, fx: f32) -> bool {
+        let has_big_diff = (fx - last_fx).abs() > Self::ASYMPTOTE_THRESHOLD;
+        let is_oposite_sign = fx * last_fx < 0.0;
+
+        has_big_diff && is_oposite_sign
     }
 
     fn compute_axises(&self, bounds: iced::Rectangle) -> Vec<f32> {

@@ -71,10 +71,10 @@ impl<'a> PipelineBuilder<'a> {
         self
     }
 
-    pub fn depth_stencil(mut self, depth_stencil: wgpu::DepthStencilState) -> Self {
-        self.depth_stencil = Some(depth_stencil);
-        self
-    }
+    // pub fn depth_stencil(mut self, depth_stencil: wgpu::DepthStencilState) -> Self {
+    //     self.depth_stencil = Some(depth_stencil);
+    //     self
+    // }
 
     pub fn multisample(mut self, multisample: wgpu::MultisampleState) -> Self {
         self.multisample = Some(multisample);
@@ -95,10 +95,10 @@ impl<'a> PipelineBuilder<'a> {
         self
     }
 
-    pub fn multiview(mut self, multiview: NonZeroU32) -> Self {
-        self.multiview = Some(multiview);
-        self
-    }
+    // pub fn multiview(mut self, multiview: NonZeroU32) -> Self {
+    //     self.multiview = Some(multiview);
+    //     self
+    // }
 
     pub fn build(self) -> RenderPipeline {
         self.device().create_render_pipeline(&RenderPipelineDescriptor {

@@ -1,4 +1,5 @@
 use super::helpers::*;
+use bytemuck::NoUninit;
 use iced::widget::shader::wgpu::{self, BufferUsages, LoadOp, Queue, ShaderStages, StoreOp};
 
 pub struct State {
@@ -16,8 +17,6 @@ impl State {
         [1.0, 1.0, 0.0, 1.0], // Yellow
         [0.0, 1.0, 1.0, 1.0], // Cyan
         [1.0, 0.0, 1.0, 1.0], // Magenta
-        [1.0, 1.0, 1.0, 1.0], // White
-        [0.5, 0.5, 0.5, 1.0], // Gray
     ];
 
     pub fn new(device: &wgpu::Device, buffers: &[Vec<f32>]) -> Self {
@@ -39,7 +38,7 @@ impl State {
                 "fs_main",
                 &[Some(STANDARD_COLOR_TARGET_STATE)],
             )
-            .primitive(wgpu::PrimitiveTopology::LineStrip)
+            .primitive(wgpu::PrimitiveTopology::LineList)
             .multisample(STANDARD_MULTISAMPLE_STATE)
             .build();
 
@@ -87,34 +86,33 @@ impl State {
     }
 
     pub fn update_buffers(&mut self, device: &wgpu::Device, queue: &Queue, buffers: &[Vec<f32>]) {
-        for i in 0..self.buffers.len().min(buffers.len()) {
-            let data = bytemuck::cast_slice(&buffers[i]);
-            queue.write_buffer(&self.buffers[i], 0, data);
-        }
-        
-        // If we add more inputs, we need to create more buffers
-        if buffers.len() > self.buffers.len() {
-            for i in self.buffers.len()..buffers.len() {
-                let buffer = buffer_init(
-                    device,
-                    &format!("graph:buffer:{}", i),
-                    BufferUsages::VERTEX | BufferUsages::COPY_DST,
-                    &buffers[i],
-                );
-                
+        for i in 0..buffers.len() {
+            let data: &[u8] = bytemuck::cast_slice(&buffers[i]);
+            if i < self.buffers.len() {
+                // Check if the new data size exceeds the existing buffer size
+                if data.len() > self.buffers[i].size() as usize {
+                    // Recreate the buffer with the new size
+                    let buffer = init_vertex_buffer(device, i, data);
+                    self.buffers[i] = buffer;
+                } else {
+                    // Update the existing buffer
+                    queue.write_buffer(&self.buffers[i], 0, data);
+                }
+            } else {
+                // Create new buffers if needed
+                let buffer = init_vertex_buffer(device, i, data);
+                self.buffers.push(buffer);
+
                 let color_buffer = init_color_buffer(device, i);
                 let (config_group, _) = BindGroupBuilder::new(device, &format!("graph:config_group:{}", i))
-                .add_entry(0, ShaderStages::FRAGMENT, None, &color_buffer)
-                .build();
-            
-                self.buffers.push(buffer);
+                    .add_entry(0, ShaderStages::FRAGMENT, None, &color_buffer)
+                    .build();
                 self.color_buffers.push(color_buffer);
                 self.config_groups.push(config_group);
             }
         }
 
-        // We clean up the buffers if we have less inputs
-        // We need to clean up GPU resources
+        // Clean up the buffers if we have fewer inputs
         if buffers.len() < self.buffers.len() {
             self.buffers.truncate(buffers.len());
             self.color_buffers.truncate(buffers.len());
@@ -124,20 +122,9 @@ impl State {
 }
 
 fn init_buffers(device: &wgpu::Device, buffers: &[Vec<f32>]) -> Vec<wgpu::Buffer> {
-    let mut wgpu_buffers = vec![];
-
-    for i in 0..buffers.len() {
-        let buffer = buffer_init(
-            device,
-            &format!("graph:buffer:{}", i),
-            BufferUsages::VERTEX | BufferUsages::COPY_DST,
-            &buffers[i],
-        );
-
-        wgpu_buffers.push(buffer);
-    }
-
-    wgpu_buffers
+    (0..buffers.len())
+        .map(|i| init_vertex_buffer(device, i, &buffers[i]))
+        .collect()
 }
 
 fn init_config_groups(
@@ -177,6 +164,15 @@ fn init_config_groups(
     }
 
     (groups, layout, color_buffers)
+}
+
+fn init_vertex_buffer<T: NoUninit>(device: &wgpu::Device, i: usize, data: &[T]) -> wgpu::Buffer {
+    buffer_init(
+        device,
+        &format!("graph:buffer:{}", i),
+        BufferUsages::VERTEX | BufferUsages::COPY_DST,
+        data,
+    )
 }
 
 fn init_color_buffer(device: &wgpu::Device, i: usize) -> wgpu::Buffer {
